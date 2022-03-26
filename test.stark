@@ -1,12 +1,13 @@
-define a, b as int;
-define flag as bool;
-flag <- false;
-a <- (1 + 2);
-b <- 0;
-incr b by 3;
+define s as string;
 
-if flag {
-    mult a by b;
-} else if a > 3 {
-    mult a by b + 2;
+function main (flag as bool, num as int) as int {
+    define i as int;
+    i <- 0;
+    if flag {
+        incr i by num;
+    } else {
+        decr i by num;
+    }
+    s <- "abc";
+    return i * 2;
 }

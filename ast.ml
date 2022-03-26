@@ -24,14 +24,19 @@ type stmt =
   | RepUntil of expr * stmt
   | Assign of string * expr
   | Expr of expr
+  | Return of expr
 
 type bind = typ * string
 
-type program = {
+type func_def = {
+  rtyp: typ;
+  fname: string;
+  formals: bind list;
   locals: bind list;
   body: stmt list;
 }
 
+type program = bind list * func_def list
 
 (* Pretty-printing functions *)
 let string_of_bop = function
@@ -74,6 +79,7 @@ let rec string_of_stmt = function
   | For(v, e1, e2, e3, s) -> "for (" ^ v ^ " = " ^ string_of_expr e1 ^ "; i <= " ^ string_of_expr e2 ^ "; i = i + " ^ string_of_expr e3 ^ ")\n" ^ string_of_stmt s
   | RepUntil(e, s) -> "do\n" ^ string_of_stmt s ^ "while (" ^ string_of_expr e ^ ");\n"
   | Expr(expr) -> string_of_expr expr ^ ";\n"
+  | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
 
 let string_of_typ = function
   | Int -> "int"
@@ -84,6 +90,15 @@ let string_of_typ = function
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
-let string_of_program fdecl =
+let string_of_fdecl fdecl =
+  string_of_typ fdecl.rtyp ^ " " ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map (fun (typ, id) -> string_of_typ typ ^ " " ^ id) fdecl.formals) ^
+  ")\n{\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
-  String.concat "" (List.map string_of_stmt fdecl.body)
+  String.concat "" (List.map string_of_stmt fdecl.body) ^
+  "}\n"
+
+let string_of_program (vars, funcs) =
+  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl funcs)
+  

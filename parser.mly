@@ -35,18 +35,39 @@ open Ast
 %%
 
 program:
-  vdecl_list stmt_list EOF { {locals=$1; body=$2} }
+  decls EOF { $1}
+
+decls:
+   /* nothing */           { ([], []) }
+ | DEFINE vdecl SEMI decls { (($2 :: fst $4), snd $4) }
+ | fdecl decls             { (fst $2, ($1 :: snd $2)) }
+
+fdecl:
+  FUNCTION ID LPAREN formals_opt RPAREN AS typ LBRACE vdecl_list stmt_list RBRACE
+  {
+    {
+      rtyp=$7;
+      fname=$2;
+      formals=$4;
+      locals=$9;
+      body=$10
+    }
+  }
+
+formals_opt:
+  | /*nothing*/ { [] }
+  | formals_list { $1 }
+
+formals_list:
+  | vdecl { [$1] }
+  | vdecl COMMA formals_list { $1::$3 }
 
 vdecl_list:
-  | /* nothing */     { [] }
-  | vdecl vdecl_list  { $1 @ $2 }
+  | /*nothing*/ { [] }
+  | DEFINE vdecl SEMI vdecl_list  { $2 :: $4 }
 
 vdecl:
-  | DEFINE id_list AS typ SEMI { List.map (fun id -> ($4, id)) $2 }
-
-id_list:
-  | ID               { [$1] }
-  | ID COMMA id_list { $1 :: $3 }
+  | ID AS typ { ($3, $1) }
 
 typ:
   | INT     { Int  }
@@ -71,6 +92,7 @@ stmt:
   | DECR_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Minus, $4)) }
   | MULT_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Times, $4)) }
   | DIVI_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Divide, $4)) }
+  | RETURN expr SEMI                            { Return $2 }
 
 block:
   | LBRACE stmt_list RBRACE         { Block $2 }
