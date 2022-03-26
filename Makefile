@@ -1,0 +1,20 @@
+all : stark.native
+
+stark.native : stark.ml parser.mly scanner.mll ast.ml
+	ocamlbuild stark.native
+
+stark.out : stark.native
+	./stark.native < test.stark > test.out
+
+
+# ##############################
+
+
+.PHONY : all test clean rebuild
+
+test : stark.native stark.out
+
+clean :
+	rm -rf *.native *.out _build/
+
+rebuild : clean all

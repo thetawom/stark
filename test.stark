@@ -1,0 +1,12 @@
+define a, b as int;
+define flag as bool;
+flag <- false;
+a <- (1 + 2);
+b <- 0;
+incr b by 3;
+
+if flag {
+    mult a by b;
+} else if a > 3 {
+    mult a by b + 2;
+}
