@@ -100,7 +100,7 @@ let check (globals, functions) =
           | Not when t1 = Bool -> Bool
           | _ -> raise (Failure err)
         in
-        (t, SUop(op, (t1, e1)))
+        (t, SUnop(op, (t1, e1)))
       | Binop(e1, op, e2) as e ->
         let (t1, e1') = check_expr e1
         and (t2, e2') = check_expr e2 in
@@ -123,9 +123,6 @@ let check (globals, functions) =
           in
           (t, SBinop((t1, e1'), op, (t2, e2')))
         else raise (Failure err)
-      | Log(e1) as e ->
-        SLog(check_expr e)
-        (* Not really sure what to do with log *)
     in
 
     let check_bool_expr e =
@@ -162,6 +159,12 @@ let check (globals, functions) =
         in
         (check_assign lt rt err, SAssign(var, (rt, e')))
       | Expr e -> SExpr (check_expr e)
+      | Return e ->
+        let (t, e') = check_expr e in
+        if t = func.rtyp then SReturn (t, e')
+        else raise (
+            Failure ("return gives " ^ string_of_typ t ^ " expected " ^
+                     string_of_typ func.rtyp ^ " in " ^ string_of_expr e))
     in (* body of check_func *)
     { srtyp = func.rtyp;
       sfname = func.fname;
