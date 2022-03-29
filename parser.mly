@@ -126,3 +126,13 @@ expr:
   | expr AND expr       { Binop ($1, And, $3) }
   | expr OR expr        { Binop ($1, Or, $3) }
   | LPAREN expr RPAREN  { $2 }
+  | ID LPAREN args_opt RPAREN { Call ($1, $3)  }
+
+/* args_opt*/
+args_opt:
+  | /*nothing*/ { [] }
+  | args        { $1 }
+
+args:
+  | expr            { [$1] }
+  | expr COMMA args { $1::$3 }

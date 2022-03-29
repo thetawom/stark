@@ -14,6 +14,7 @@ type expr =
   | Id of string
   | Unop of uop * expr
   | Binop of expr * bop * expr
+  | Call of string * expr list
 
 type stmt =
   | Block of stmt list
@@ -69,6 +70,7 @@ let rec string_of_expr = function
   | Id(s) -> s
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Binop(e1, o, e2) -> "(" ^ string_of_expr e1 ^ " " ^ string_of_bop o ^ " " ^ string_of_expr e2 ^ ")"
+  | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
 
 let rec string_of_stmt = function
   | Block(stmts) -> "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"

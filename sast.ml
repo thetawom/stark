@@ -12,6 +12,7 @@ and sx =
   | SId of string
   | SUnop of uop * sexpr
   | SBinop of sexpr * bop * sexpr
+  | SCall of string * sexpr list
 
 type sstmt =
   | SBlock of sstmt list
