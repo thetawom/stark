@@ -19,7 +19,7 @@ type sstmt =
   | SIfElse of sexpr * sstmt * sstmt
   | SIf of sexpr * sstmt
   | SWhile of sexpr * sstmt
-  | SFor of string * sexpr * sexpr * sexpr * sstmt (* Not sure about string here *)
+  (*| SFor of string * sexpr * sexpr * sexpr * sstmt*)
   | SRepUntil of sexpr * sstmt
   | SAssign of string * sexpr
   | SExpr of sexpr
@@ -36,16 +36,18 @@ type sfunc_def = {
 type sprogram = bind list * sfunc_def list
 
 (* Pretty-printing functions *)
-let rec string_of_sexpr = function
-  | SIntLit(l) -> string_of_int l
-  | SBoolLit(true) -> "true"
-  | SBoolLit(false) -> "false"
-  | SCharLit(c) -> "'" ^ String.make 1 c ^ "'"
-  | SFloatLit(f) -> string_of_float f
-  | SStringLit(s) -> "\"" ^ s ^ "\""
-  | SId(s) -> s
-  | SUnop(o, e) -> string_of_uop o ^ string_of_sexpr e
-  | SBinop(e1, o, e2) -> "(" ^ string_of_sexpr e1 ^ " " ^ string_of_bop o ^ " " ^ string_of_sexpr e2 ^ ")"
+let rec string_of_sexpr (t,e) =
+	"(" ^ string_of_typ t ^ " : " ^ (match e with
+	  | SIntLit(l) -> string_of_int l
+	  | SBoolLit(true) -> "true"
+	  | SBoolLit(false) -> "false"
+	  | SCharLit(c) -> "'" ^ String.make 1 c ^ "'"
+	  | SFloatLit(f) -> string_of_float f
+	  | SStringLit(s) -> "\"" ^ s ^ "\""
+	  | SId(s) -> s
+	  | SUnop(o, e1) -> string_of_uop o ^ string_of_sexpr e1
+	  | SBinop(e1, o, e2) -> "(" ^ string_of_sexpr e1 ^ " " ^ string_of_bop o ^ " " ^ string_of_sexpr e2 ^ ")"
+	) ^ ")"
 
 let rec string_of_sstmt = function
   | SBlock(stmts) -> "{\n" ^ String.concat "" (List.map string_of_sstmt stmts) ^ "}\n"
@@ -53,7 +55,7 @@ let rec string_of_sstmt = function
   | SIf(e, s) ->  "if (" ^ string_of_sexpr e ^ ")\n" ^ string_of_sstmt s
   | SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
   | SAssign(v, e) -> v ^ " = " ^ string_of_sexpr e ^ ";\n"
-  | SFor(v, e1, e2, e3, s) -> "for (" ^ v ^ " = " ^ string_of_sexpr e1 ^ "; i <= " ^ string_of_sexpr e2 ^ "; i = i + " ^ string_of_sexpr e3 ^ ")\n" ^ string_of_sstmt s
+  (*| SFor(str, e1, e2, e3, s) -> "for (" ^ str ^ " = " ^ string_of_sexpr e1 ^ ";  i  <= " ^ string_of_sexpr e2 ^ "; i = i + " ^ string_of_sexpr e3 ^ ")\n" ^ string_of_sstmt s*)
   | SRepUntil(e, s) -> "do\n" ^ string_of_sstmt s ^ "while (" ^ string_of_sexpr e ^ ");\n"
   | SExpr(expr) -> string_of_sexpr expr ^ ";\n"
   | SReturn(expr) -> "return " ^ string_of_sexpr expr ^ ";\n"
