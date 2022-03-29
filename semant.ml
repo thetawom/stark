@@ -100,7 +100,7 @@ let check (globals, functions) =
           | Not when t1 = Bool -> Bool
           | _ -> raise (Failure err)
         in
-        (t, SUnop(op, (t1, e1)))
+        (t, SUnop(op, (t1, e1')))
       | Binop(e1, op, e2) as e ->
         let (t1, e1') = check_expr e1
         and (t2, e2') = check_expr e2 in
@@ -123,6 +123,20 @@ let check (globals, functions) =
           in
           (t, SBinop((t1, e1'), op, (t2, e2')))
         else raise (Failure err)
+	  | Call(fname, args) as call ->
+		let fd = find_func fname in
+		let param_length = List.length fd.formals in
+		if List.length args != param_length then
+		  raise (Failure ("expecting " ^ string_of_int param_length ^
+						  " arguments in " ^ string_of_expr call))
+		else let check_call (ft, _) e =
+			   let (et, e') = check_expr e in
+			   let err = "illegal argument found " ^ string_of_typ et ^
+						 " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
+			   in (check_assign ft et err, e')
+		  in
+		  let args' = List.map2 check_call fd.formals args
+		  in (fd.rtyp, SCall(fname, args'))
     in
 
     let check_bool_expr e =
@@ -141,21 +155,21 @@ let check (globals, functions) =
       (* A block is correct if each statement is correct and nothing
          follows any Return statement.  Nested blocks are flattened. *)
         Block sl -> SBlock (check_stmt_list sl)
-      | IfElse((e, st1, st2) ->
-        SIfElse(check_bool_expr e, check_stmt st1, check_stmt st2)) 
+      | IfElse(e, st1, st2) ->
+        SIfElse(check_bool_expr e, check_stmt st1, check_stmt st2) 
       | If(e, st1) ->
         SIf(check_bool_expr e, check_stmt st1)
       | While(e, st) ->
         SWhile(check_bool_expr e, check_stmt st)
-      | For(str, e1, e2, e3, s1) ->
-        SFor() (* Not sure about the string here *)
+      (*| For(v1, e1, v2, e2, v3, v4 e3, s) ->
+        SFor(check_expr v1, check__expr e1, check_expr v2, check_expr e2, check_expr v3, check_expr v4, check__expr e3, check_stmt s1)*)
       | RepUntil(e, st) ->
         SRepUntil(check_bool_expr e, check_stmt st)
       | Assign(var, e) as ex ->
         let lt = type_of_identifier var
         and (rt, e') = check_expr e in
         let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^
-                  string_of_typ rt ^ " in " ^ string_of_expr ex
+                  string_of_typ rt ^ " in " ^ string_of_stmt ex
         in
         (check_assign lt rt err, SAssign(var, (rt, e')))
       | Expr e -> SExpr (check_expr e)
