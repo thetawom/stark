@@ -84,8 +84,6 @@ stmt:
   | block                                       { $1 }
   | cond                                        { $1 }
   | WHILE expr block                            { While ($2, $3) }
-  | FOR ID FROM expr TO expr EVERY expr block   { For ($2, $4, $6, $8, $9) }
-  | FOR ID FROM expr TO expr block              { For ($2, $4, $6, IntLit 1, $7) }
   | REPEAT block UNTIL expr SEMI                { RepUntil ($4, $2) }
   | ID ASSIGN expr SEMI                         { Assign ($1, $3) }
   | INCR_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Plus, $4)) }

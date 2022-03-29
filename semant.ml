@@ -171,7 +171,8 @@ let check (globals, functions) =
         let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^
                   string_of_typ rt ^ " in " ^ string_of_stmt ex
         in
-        (check_assign lt rt err, SAssign(var, (rt, e')))
+		let _ = check_assign lt rt err in
+        (SAssign(var, (rt, e')))
       | Expr e -> SExpr (check_expr e)
       | Return e ->
         let (t, e') = check_expr e in
