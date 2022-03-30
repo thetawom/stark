@@ -47,6 +47,7 @@ let rec string_of_sexpr (t,e) =
 	  | SId(s) -> s
 	  | SUnop(o, e1) -> string_of_uop o ^ string_of_sexpr e1
 	  | SBinop(e1, o, e2) -> "(" ^ string_of_sexpr e1 ^ " " ^ string_of_bop o ^ " " ^ string_of_sexpr e2 ^ ")"
+	  | SCall(_,_) -> ""
 	) ^ ")"
 
 let rec string_of_sstmt = function
