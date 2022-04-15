@@ -18,11 +18,11 @@ let translate (globals, functions) =
   and i1_t       = L.i1_type     context
   
   
-  (*I added this. Don't know how to represent char and string*)
-  (*?????*)
+  
+  (*TODO: Don't know how to represent char and string*)
   and char_t     = L.            context
   and float_t    = L.float_type  context
-  and string_t   = L.			  context in
+  and string_t   = L.            context in
 
 
 
@@ -30,16 +30,9 @@ let translate (globals, functions) =
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
-	
-	
-	
-	(*I added this.*)
 	| A.Char  -> char_t
 	| A.Float -> float_t
 	| A.String -> string_t
-	
-	
-	
   in
 
   (* Create a map of global variables after creating each *)
@@ -106,30 +99,21 @@ let translate (globals, functions) =
       | SBoolLit b	-> L.const_int i1_t (if b then 1 else 0)
 	  
 	  
-	  (*I added this. Don't know how to represent char and string*)
-		(*?????*)
-	  | SCharLit c	-> L.const_string il_t c
+	  
+	  (*TODO: Don't know how to represent char and string*)
+	  | SCharLit c	-> L.
 	  | SFloatLit f	-> L.const_float float_t f
-	  | SStringLit s-> L.const_string 
+	  | SStringLit s-> L.
 	  
 	  
 	  
-      | SId v       -> L.build_load (lookup v) v builder
-      | SAssign (s, e) -> let e' = build_expr builder e in
-        ignore(L.build_store e' (lookup s) builder); e'
-	  
-	  
-	  (*I created this. Unsure of Pos*)
+      | SId s       -> L.build_load (lookup s) s builder
 	  | SUnop (op, e1) ->
 		let e1' = build_expr builder e1 in
 		(match op with
-		   A.Pos ->   -> (*?????*)
-		 | A.Neg ->   -> L.build_neg
+		   A.Neg ->   -> L.build_neg
 		 | A.Not ->   -> L.build_not
 		 ) e1' "tmp" builder
-      
-	  
-	  (*I added to this*)
 	  | SBinop (e1, op, e2) ->
         let e1' = build_expr builder e1
         and e2' = build_expr builder e2 in
@@ -148,10 +132,6 @@ let translate (globals, functions) =
 		 | A.And      -> L.build_and
          | A.Or       -> L.build_or
         ) e1' e2' "tmp" builder
-		
-		
-		
-		(*????? We didn't implement function calls in the sast*)
       | SCall ("print", [e]) ->
         L.build_call printf_func [| int_format_str ; (build_expr builder e) |]
           "printf" builder
@@ -178,15 +158,18 @@ let translate (globals, functions) =
         SBlock sl -> List.fold_left build_stmt builder sl
       | SExpr e -> ignore(build_expr builder e); builder
       | SReturn e -> ignore(L.build_ret (build_expr builder e) builder); builder
-	  
-	  
-	  
-	  (*Need to add code for IfElse and RepUntil. Also, we have SAssign in sstmt while the professor has it in sexpr sx. Why did we do it this way?*)
-	  
-	  
-	  
-	  
-      | SIf (predicate, then_stmt, else_stmt) ->
+	  | SAssign (s, e) -> let e' = build_expr builder e in
+        ignore(L.build_store e' (lookup s) builder); e'
+	  | SIf (predicate, then_stmt) ->
+        let bool_val = build_expr builder predicate in
+
+        let then_bb = L.append_block context "then" the_function in
+        ignore (build_stmt (L.builder_at_end context then_bb) then_stmt);
+        add_terminal (L.builder_at_end context then_bb) build_br_end;
+
+        ignore(L.build_cond_br bool_val then_bb builder);
+        L.builder_at_end context end_bb
+      | SIfElse (predicate, then_stmt, else_stmt) ->
         let bool_val = build_expr builder predicate in
 
         let then_bb = L.append_block context "then" the_function in
@@ -216,7 +199,24 @@ let translate (globals, functions) =
 
         ignore(L.build_cond_br bool_val body_bb end_bb while_builder);
         L.builder_at_end context end_bb
+		
+		
+		(*TODO: For RepUntil I copied the code from While. Not sure if it needs modifications.*)
+	  | SRepUntil (predicate, body) ->
+        let repUntil_bb = L.append_block context "repUntil" the_function in
+        let build_br_repUntil = L.build_br repUntil_bb in (* partial function *)
+        ignore (build_br_repUntil builder);
+        let repUntil_builder = L.builder_at_end context repUntil_bb in
+        let bool_val = build_expr repUntil_builder predicate in
 
+        let body_bb = L.append_block context "repUntil_body" the_function in
+        add_terminal (build_stmt (L.builder_at_end context body_bb) body) build_br_repUntil;
+
+        let end_bb = L.append_block context "repUntil_end" the_function in
+
+        ignore(L.build_cond_br bool_val body_bb end_bb repUntil_builder);
+        L.builder_at_end context end_bb
+		
     in
     (* Build the code for each statement in the function *)
     let func_builder = build_stmt builder (SBlock fdecl.sbody) in
