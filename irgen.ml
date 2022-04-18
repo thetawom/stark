@@ -20,9 +20,9 @@ let translate (globals, functions) =
   
   
   (*TODO: Don't know how to represent char and string*)
-  and char_t     = L.            context
+  and char_t     = L.i1_type     context (**Uncertain *)
   and float_t    = L.float_type  context
-  and string_t   = L.            context in
+  and string_t   = L.i8_type     context in
 
 
 
@@ -101,7 +101,7 @@ let translate (globals, functions) =
 	  
 	  
 	  (*TODO: Don't know how to represent char and string*)
-	  | SCharLit c	-> L.
+	  | SCharLit c	-> L.const_string char_t c (**Uncertain *)
 	  | SFloatLit f	-> L.const_float float_t f
 	  | SStringLit s-> L.const_string string_t s
 	  
