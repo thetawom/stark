@@ -28,8 +28,8 @@ let translate (globals, functions) =
 
   (* Return the LLVM type for a Stark type *)
   let ltype_of_typ = function
-      A.Int   -> i32_t
-    | A.Bool  -> i1_t
+    A.Int   -> i32_t
+  | A.Bool  -> i1_t
 	| A.Char  -> char_t
 	| A.Float -> float_t
 	| A.String -> string_t
@@ -103,7 +103,7 @@ let translate (globals, functions) =
 	  (*TODO: Don't know how to represent char and string*)
 	  | SCharLit c	-> L.
 	  | SFloatLit f	-> L.const_float float_t f
-	  | SStringLit s-> L.
+	  | SStringLit s-> L.const_string string_t s
 	  
 	  
 	  
