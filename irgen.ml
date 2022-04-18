@@ -107,7 +107,7 @@ let translate (globals, functions) =
 	  
 	  
 	  
-      | SId s       -> L.build_load (lookup s) s builder
+    | SId s       -> L.build_load (lookup s) s builder
 	  | SUnop (op, e1) ->
 		let e1' = build_expr builder e1 in
 		(match op with
@@ -121,15 +121,15 @@ let translate (globals, functions) =
            A.Plus     -> L.build_add
          | A.Minus    -> L.build_sub
          | A.Times    -> L.build_mul
-		 | A.Divide   -> L.build_sdiv
-		 | A.Mod      -> L.build_srem
+         | A.Divide   -> L.build_sdiv
+         | A.Mod      -> L.build_srem
          | A.Eq       -> L.build_icmp L.Icmp.Eq
          | A.Neq      -> L.build_icmp L.Icmp.Ne
          | A.Lt       -> L.build_icmp L.Icmp.Slt
-		 | A.Gt       -> L.build_icmp L.Icmp.Sgt
-		 | A.Lte      -> L.build_icmp L.Icmp.Sle
-		 | A.Gte      -> L.build_icmp L.Icmp.Sge
-		 | A.And      -> L.build_and
+         | A.Gt       -> L.build_icmp L.Icmp.Sgt
+         | A.Lte      -> L.build_icmp L.Icmp.Sle
+         | A.Gte      -> L.build_icmp L.Icmp.Sge
+         | A.And      -> L.build_and
          | A.Or       -> L.build_or
         ) e1' e2' "tmp" builder
       | SCall ("print", [e]) ->
