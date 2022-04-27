@@ -1,10 +1,8 @@
 function main () as int {
-    define f as float;
-    define i as int;
-    f <- 0.0;
-    i <- 1;
-    test_float(f);
-    print(test_int(i));
+    printb(not(-1 >= 1));
+    print(test_int(1));
+    printc('a');
+    prints("Hello World");
 }
 
 function test_int (i as int) as int {
@@ -15,14 +13,4 @@ function test_int (i as int) as int {
     i <- -i;
     i <- +i;
     return i; 
-}
-
-function test_float (f as float) as float {
-    incr f by 5.2;
-    decr f by 5.0;
-    mult f by 2.5;
-    divi f by 1.0;
-    f <- -f;
-    f <- +f;
-    return f;
 }
