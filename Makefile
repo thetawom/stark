@@ -1,14 +1,13 @@
 all : stark.native
 
 stark.native : stark.ml parser.mly scanner.mll ast.ml
-	ocamlbuild stark.native
+	ocamlbuild -pkgs llvm stark.native
 
-stark.out : stark.native
-	./stark.native < test.stark > test.out
+test.llvm : stark.native
+	./stark.native -l test.stark > test.llvm
 
-testing: stark.native
-	./stark.native < test1.stark > test1.out
-	diff correctTest1.out test1.out
+test.out: test.llvm
+	lli test.llvm > test.out
 
 
 # ##############################
@@ -16,9 +15,9 @@ testing: stark.native
 
 .PHONY : all test clean rebuild
 
-test : stark.native stark.out testing
+test : test.out
 
 clean :
-	rm -rf *.native *.out _build/
+	rm -rf *.native *.out *.llvm _build/
 
 rebuild : clean all
