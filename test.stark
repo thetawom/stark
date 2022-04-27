@@ -1,6 +1,10 @@
 function main (flag as bool, num as int) as int {
     define i as int;
+    define s as string;
+    define c as char;
     i <- 0;
+    s <- "abcd";
+    c <- 'a';
     if flag {
         incr i by num;
     }
