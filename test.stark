@@ -1,13 +1,8 @@
-define s as string;
-
 function main (flag as bool, num as int) as int {
     define i as int;
     i <- 0;
     if flag {
         incr i by num;
-    } else {
-        decr i by num;
     }
-    s <- "abc";
     return i * 2;
 }

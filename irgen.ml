@@ -101,9 +101,9 @@ let translate (globals, functions) =
 	  
 	  
 	  (*TODO: Don't know how to represent char and string*)
-	  | SCharLit c	-> L.const_string char_t c (**Uncertain *)
+	  (* | SCharLit c	-> L.const_string char_t c *Uncertain *)
 	  | SFloatLit f	-> L.const_float float_t f
-	  | SStringLit s-> L.const_string string_t s
+	  (* | SStringLit s-> L.const_string string_t s *)
 	  
 	  
 	  
@@ -111,8 +111,8 @@ let translate (globals, functions) =
 	  | SUnop (op, e1) ->
 		let e1' = build_expr builder e1 in
 		(match op with
-		   A.Neg ->   -> L.build_neg
-		 | A.Not ->   -> L.build_not
+		   A.Neg ->   L.build_neg
+		 | A.Not ->   L.build_not
 		 ) e1' "tmp" builder
 	  | SBinop (e1, op, e2) ->
         let e1' = build_expr builder e1
@@ -159,16 +159,19 @@ let translate (globals, functions) =
       | SExpr e -> ignore(build_expr builder e); builder
       | SReturn e -> ignore(L.build_ret (build_expr builder e) builder); builder
 	  | SAssign (s, e) -> let e' = build_expr builder e in
-        ignore(L.build_store e' (lookup s) builder); e'
+        ignore(L.build_store e' (lookup s) builder); builder
 	  | SIf (predicate, then_stmt) ->
-        let bool_val = build_expr builder predicate in
+      let bool_val = build_expr builder predicate in
 
-        let then_bb = L.append_block context "then" the_function in
-        ignore (build_stmt (L.builder_at_end context then_bb) then_stmt);
-        add_terminal (L.builder_at_end context then_bb) build_br_end;
+      let then_bb = L.append_block context "then" the_function in
+      ignore (build_stmt (L.builder_at_end context then_bb) then_stmt);
 
-        ignore(L.build_cond_br bool_val then_bb builder);
-        L.builder_at_end context end_bb
+      let end_bb = L.append_block context "if_end" the_function in
+      let build_br_end = L.build_br end_bb in (* partial function *)
+      add_terminal (L.builder_at_end context then_bb) build_br_end;
+
+      ignore(L.build_cond_br bool_val then_bb end_bb builder);
+      L.builder_at_end context end_bb
       | SIfElse (predicate, then_stmt, else_stmt) ->
         let bool_val = build_expr builder predicate in
 
