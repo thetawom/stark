@@ -1,12 +1,28 @@
-function main (flag as bool, num as int) as int {
+function main () as int {
+    define f as float;
     define i as int;
-    define s as string;
-    define c as char;
-    i <- 0;
-    s <- "abcd";
-    c <- 'a';
-    if flag {
-        incr i by num;
-    }
-    return i * 2;
+    f <- 0.0;
+    i <- 1;
+    test_float(f);
+    print(test_int(i));
+}
+
+function test_int (i as int) as int {
+    incr i by 3;
+    decr i by 6;
+    mult i by 7;
+    divi i by -7;
+    i <- -i;
+    i <- +i;
+    return i; 
+}
+
+function test_float (f as float) as float {
+    incr f by 5.2;
+    decr f by 5.0;
+    mult f by 2.5;
+    divi f by 1.0;
+    f <- -f;
+    f <- +f;
+    return f;
 }

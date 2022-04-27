@@ -95,15 +95,21 @@ let translate (globals, functions) =
           let e' = build_expr builder e in
           match op with
           | A.Pos -> e'
-          | A.Neg -> L.build_neg e' "tmp" builder
+          | A.Neg ->
+              (if L.type_of e' = i32_t then L.build_neg else L.build_fneg)
+                e' "tmp" builder
           | A.Not -> L.build_not e' "tmp" builder )
       | SBinop (e1, op, e2) ->
           let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
           ( match op with
-          | A.Plus -> L.build_add
-          | A.Minus -> L.build_sub
-          | A.Times -> L.build_mul
-          | A.Divide -> L.build_sdiv
+          | A.Plus ->
+              if L.type_of e1' = i32_t then L.build_add else L.build_fadd
+          | A.Minus ->
+              if L.type_of e1' = i32_t then L.build_sub else L.build_fsub
+          | A.Times ->
+              if L.type_of e1' = i32_t then L.build_mul else L.build_fmul
+          | A.Divide ->
+              if L.type_of e1' = i32_t then L.build_sdiv else L.build_fdiv
           | A.Mod -> L.build_srem
           | A.Eq -> L.build_icmp L.Icmp.Eq
           | A.Neq -> L.build_icmp L.Icmp.Ne

@@ -91,6 +91,7 @@ stmt:
   | MULT_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Times, $4)) }
   | DIVI_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Divide, $4)) }
   | RETURN expr SEMI                            { Return $2 }
+  | expr SEMI                                   { Expr $1 }
 
 block:
   | LBRACE stmt_list RBRACE         { Block $2 }
