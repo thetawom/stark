@@ -1,23 +1,17 @@
-all : stark.native
+default: dune
 
-stark.native : stark.ml parser.mly scanner.mll ast.ml semant.ml sast.ml irgen.ml
-	ocamlbuild -pkgs llvm stark.native
+dune:
+	dune build
 
-test.llvm : stark.native test.stark
-	./stark.native -l test.stark > test.llvm
+test:
+	_build/install/default/bin/stark -l test/test.stark > test/test.llvm
+	lli test/test.llvm
 
-test.out: test.llvm
-	lli test.llvm > test.out
-
-
-# ##############################
-
-
-.PHONY : all test clean rebuild
-
-test : stark.native test.llvm test.out
+# %.native:
+# 	ocamlbuild -use-ocamlfind $@
+# 	mv $@ $*
 
 clean :
-	rm -rf *.native *.out *.llvm _build/
+	rm -rf test/*.llvm test/*.out _build/
 
-rebuild : clean all
+.PHONY: dune test default clean

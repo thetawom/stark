@@ -1,0 +1,9 @@
+(ocamllex scanner)
+
+(ocamlyacc parser)
+
+(executable
+ (name stark)
+ (public_name stark)
+ (libraries llvm)
+ (modules scanner parser stark sast ast semant irgen))

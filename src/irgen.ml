@@ -140,7 +140,7 @@ let translate (globals, functions) =
             [|string_format_str; build_expr builder e|]
             "printf" builder
       | SCall (f, args) ->
-          let fdef, fdecl = StringMap.find f function_decls in
+          let fdef, _ = StringMap.find f function_decls in
           let llargs =
             List.rev (List.map (build_expr builder) (List.rev args))
           in
