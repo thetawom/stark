@@ -1,6 +1,11 @@
 function main () as int {
     define i as int;
     define j as int;
+    define c as char;
+    c <- ~'a';
+    ~"Hello";
+    printf(1.0);
+
     for i from 1 to 3 every 2 {
         ~j <- ~ (2 * (~i + 1)) + 1;
     }

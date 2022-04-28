@@ -28,7 +28,6 @@ setup.log
 
 # Local OPAM switch
 _opam/
-*.opam
 
 # test files
 *.out
