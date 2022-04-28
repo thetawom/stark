@@ -19,6 +19,8 @@ rule token = parse
 | ';'           { SEMI }
 | ','           { COMMA }
 
+| '~'           { TILDE }
+
 | '+'           { PLUS }
 | '-'           { MINUS }
 | '*'           { TIMES }

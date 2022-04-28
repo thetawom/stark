@@ -3,7 +3,7 @@ default: dune
 dune:
 	dune build
 
-test:
+test: dune
 	_build/install/default/bin/stark -l test/test.stark > test/test.llvm
 	lli test/test.llvm
 

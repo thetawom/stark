@@ -1,6 +1,6 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
-type uop = Pos | Neg | Not
+type uop = Pos | Neg | Not | Til
 
 type bop =
   | Plus
@@ -68,7 +68,11 @@ let string_of_bop = function
   | And -> "&&"
   | Or -> "||"
 
-let string_of_uop = function Pos -> "" | Neg -> "-" | Not -> "!"
+let string_of_uop = function
+  | Pos -> ""
+  | Neg -> "-"
+  | Not -> "!"
+  | Til -> "~"
 
 let rec string_of_expr = function
   | IntLit l -> string_of_int l

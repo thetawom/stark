@@ -97,6 +97,7 @@ let check (globals, functions) =
             | (Pos | Neg) when t1 = Int -> Int
             | (Pos | Neg) when t1 = Float -> Float
             | Not when t1 = Bool -> Bool
+            | Til -> t1
             | _ -> raise (Failure err)
           in
           (t, SUnop (op, (t1, e1')))

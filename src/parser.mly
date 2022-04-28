@@ -4,7 +4,7 @@
 open Ast
 %}
 
-%token LPAREN RPAREN LBRACE RBRACE SEMI COMMA
+%token LPAREN RPAREN LBRACE RBRACE SEMI COMMA TILDE
 %token PLUS MINUS TIMES DIVIDE MOD
 %token ASSIGN INCR_ASN DECR_ASN MULT_ASN DIVI_ASN BY
 %token EQ NEQ LT GT LTE GTE
@@ -30,7 +30,7 @@ open Ast
 %left LT GT LTE GTE
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
-%right NOT
+%right NOT TILDE
 
 %%
 
@@ -90,6 +90,11 @@ stmt:
   | DECR_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Minus, $4)) }
   | MULT_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Times, $4)) }
   | DIVI_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Divide, $4)) }
+  | TILDE ID ASSIGN expr SEMI                   { Block [ Assign ($2, $4); Expr (Unop (Til, Id $2)) ] }
+  | INCR_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Plus, $5)); Expr (Unop (Til, Id $3)) ] }
+  | DECR_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Minus, $5)); Expr (Unop (Til, Id $3)) ] }
+  | MULT_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Times, $5)); Expr (Unop (Til, Id $3)) ] }
+  | DIVI_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Divide, $5)); Expr (Unop (Til, Id $3)) ] }
   | RETURN expr SEMI                            { Return $2 }
   | expr SEMI                                   { Expr $1 }
 
@@ -111,6 +116,7 @@ expr:
   | PLUS expr           { Unop (Pos, $2) }
   | MINUS expr          { Unop (Neg, $2) }
   | NOT expr            { Unop (Not, $2) }
+  | TILDE expr          { Unop (Til, $2) }
   | expr PLUS expr      { Binop ($1, Plus, $3) }
   | expr MINUS expr     { Binop ($1, Minus, $3) }
   | expr TIMES expr     { Binop ($1, Times, $3) }

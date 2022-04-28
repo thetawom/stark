@@ -101,7 +101,8 @@ let translate (globals, functions) =
           | A.Neg ->
               (if L.type_of e' = i32_t then L.build_neg else L.build_fneg)
                 e' "tmp" builder
-          | A.Not -> L.build_not e' "tmp" builder )
+          | A.Not -> L.build_not e' "tmp" builder
+          | A.Til -> e' )
       | SBinop (e1, op, e2) ->
           let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
           ( match op with
