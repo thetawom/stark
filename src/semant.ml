@@ -167,22 +167,21 @@ let check (globals, functions) =
           SIfElse (check_bool_expr e, check_stmt st1, check_stmt st2)
       | If (e, st1) -> SIf (check_bool_expr e, check_stmt st1)
       | While (e, st) -> SWhile (check_bool_expr e, check_stmt st)
-      | For (var, e1, e2, e3, s) as ex ->
+      | For (var, e1, e2, e3, s) ->
           let t = type_of_identifier var
           and t1, e1' = check_expr e1
           and t2, e2' = check_expr e2
           and t3, e3' = check_expr e3 in
           let err =
             "mismatch of types " ^ string_of_typ t ^ ", " ^ string_of_typ t1
-            ^ ", " ^ string_of_typ t2 ^ ", and " ^ string_of_typ t3 ^ " in "
-            ^ string_of_stmt ex
+            ^ ", " ^ string_of_typ t2 ^ ", and " ^ string_of_typ t3
           in
           let _ =
             if t = t1 && t = t2 && t = t3 then t else raise (Failure err)
           in
           let err =
-            "variables must be numeric instead of type " ^ string_of_typ t
-            ^ " in " ^ string_of_stmt ex
+            "for loop variables must be of type int instead of type "
+            ^ string_of_typ t
           in
           let _ = if t == Int then t else raise (Failure err) in
           SFor (var, (t1, e1'), (t2, e2'), (t3, e3'), check_stmt s)

@@ -1,17 +1,7 @@
 function main () as int {
     define i as int;
-    prints("While Loop");
-    while (i < 10) {
-        print(i);
-        incr i by 3;
-    }
-    prints("Repeat Until Loop");
-    repeat {
-        print(i);
-        decr i by 2;
-    } until i < 0;
-    prints("For Loop");
-    for i from 1 to 10 every 2*i {
-        print(i);
+    define j as int;
+    for i from 1 to 3 every 2 {
+        ~j <- ~ (2 * (~i + 1)) + 1;
     }
 }
