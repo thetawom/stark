@@ -35,7 +35,7 @@ type stmt =
   | IfElse of expr * stmt * stmt
   | If of expr * stmt
   | While of expr * stmt
-  (*| For of string * expr * expr * expr * stmt*)
+  | For of string * expr * expr * expr * stmt
   | RepUntil of expr * stmt
   | Assign of string * expr
   | Expr of expr
@@ -98,9 +98,9 @@ let rec string_of_stmt = function
   | If (e, s) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | While (e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Assign (v, e) -> v ^ " = " ^ string_of_expr e ^ ";\n"
-  (*| For(str, e1, e2, e3, s) -> "for (" ^ str ^ " = " ^ string_of_sexpr e1 ^
-    "; i <= " ^ string_of_sexpr e2 ^ "; i = i + " ^ string_of_sexpr e3 ^
-    ")\n" ^ string_of_sstmt s*)
+  | For (v, e1, e2, e3, s) ->
+      "for (" ^ v ^ " = " ^ string_of_expr e1 ^ "; i <= " ^ string_of_expr e2
+      ^ "; i = i + " ^ string_of_expr e3 ^ ")\n" ^ string_of_stmt s
   | RepUntil (e, s) ->
       "do\n" ^ string_of_stmt s ^ "while (" ^ string_of_expr e ^ ");\n"
   | Expr expr -> string_of_expr expr ^ ";\n"

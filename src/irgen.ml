@@ -209,8 +209,6 @@ let translate (globals, functions) =
           let end_bb = L.append_block context "while_end" the_function in
           ignore (L.build_cond_br bool_val body_bb end_bb while_builder) ;
           L.builder_at_end context end_bb
-      (*TODO: For RepUntil I copied the code from While. Not sure if it needs
-        modifications.*)
       | SRepUntil (predicate, body) ->
           let loop_bb = L.append_block context "loop_body" the_function in
           ignore (L.build_br loop_bb builder) ;
@@ -222,6 +220,18 @@ let translate (globals, functions) =
           let bool_val = build_expr rep_builder predicate in
           ignore (L.build_cond_br bool_val end_bb loop_bb rep_builder) ;
           L.builder_at_end context end_bb
+      | SFor (var, e1, e2, e3, body) ->
+          let ty, _ = e1 in
+          build_stmt builder
+            (SBlock
+               [ SAssign (var, e1)
+               ; SWhile
+                   ( (A.Bool, SBinop ((ty, SId var), A.Lte, e2))
+                   , SBlock
+                       [ body
+                       ; SAssign
+                           (var, (ty, SBinop ((ty, SId var), A.Plus, e3))) ]
+                   ) ] )
     in
     (* Build the code for each statement in the function *)
     let func_builder = build_stmt builder (SBlock fdecl.sbody) in
