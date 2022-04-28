@@ -212,20 +212,15 @@ let translate (globals, functions) =
       (*TODO: For RepUntil I copied the code from While. Not sure if it needs
         modifications.*)
       | SRepUntil (predicate, body) ->
-          let repUntil_bb = L.append_block context "repUntil" the_function in
-          let build_br_repUntil = L.build_br repUntil_bb in
+          let loop_bb = L.append_block context "loop_body" the_function in
+          ignore (L.build_br loop_bb builder) ;
+          let end_bb = L.append_block context "loop_end" the_function in
           (* partial function *)
-          ignore (build_br_repUntil builder) ;
-          let repUntil_builder = L.builder_at_end context repUntil_bb in
-          let bool_val = build_expr repUntil_builder predicate in
-          let body_bb =
-            L.append_block context "repUntil_body" the_function
+          let rep_builder =
+            build_stmt (L.builder_at_end context loop_bb) body
           in
-          add_terminal
-            (build_stmt (L.builder_at_end context body_bb) body)
-            build_br_repUntil ;
-          let end_bb = L.append_block context "repUntil_end" the_function in
-          ignore (L.build_cond_br bool_val body_bb end_bb repUntil_builder) ;
+          let bool_val = build_expr rep_builder predicate in
+          ignore (L.build_cond_br bool_val end_bb loop_bb rep_builder) ;
           L.builder_at_end context end_bb
     in
     (* Build the code for each statement in the function *)

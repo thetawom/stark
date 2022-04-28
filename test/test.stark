@@ -1,16 +1,12 @@
 function main () as int {
-    printb(not(-1 >= 1));
-    print(test_int(1));
-    printc(~'a');
-    prints(~"Hello World");
-}
-
-function test_int (i as int) as int {
-    incr ~i by ~3;
-    decr i by 6;
-    mult i by 7;
-    divi i by -7;
-    ~i <- ~-i;
-    i <- +i;
-    return i; 
+    define i as int;
+    i <- 0;
+    while (i < 10) {
+        incr i by 1;
+        print(i);
+    }
+    repeat {
+        decr i by 2;
+        print(i);
+    } until i == 0;
 }
