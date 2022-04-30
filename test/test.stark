@@ -1,6 +1,9 @@
 function main () as int {
-    printb('a' as bool);
-    printb((3 - 3) as bool);
-    printb(true as bool);
-    printb(false as bool);
+    define c as char;
+    ~ 3.2;
+    ~ 6;
+    ~ "Hello World";
+    printc ( ~ (~ (~ 'a' as int) + 1) as char );
+    ~ true;
+    ~ false;
 }

@@ -104,9 +104,19 @@ let translate (globals, functions) =
                 e' "tmp" builder
           | A.Not -> L.build_not e' "tmp" builder
           | A.Til ->
+              let ty = L.type_of e' in
               ignore
-                (L.build_call printf_func [|int_format_str; e'|] "printf"
-                   builder ) ;
+                (L.build_call printf_func
+                   ( if ty == float_t then
+                     [| float_format_str
+                      ; L.build_fpext (build_expr builder e) double_t ""
+                          builder |]
+                   else if ty == i8_t then
+                     [|char_format_str; build_expr builder e|]
+                   else if ty == L.pointer_type i8_t then
+                     [|string_format_str; build_expr builder e|]
+                   else [|int_format_str; e'|] )
+                   "printf" builder ) ;
               e' )
       | SBinop (e1, op, e2) ->
           let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
