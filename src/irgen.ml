@@ -134,8 +134,8 @@ let translate (globals, functions) =
           let t2 = L.type_of e' in
           match t1 with
           | A.Int ->
-              (if t2 == float_t then L.const_fptosi else L.const_zext)
-                e' i32_t
+              (if t2 == float_t then L.build_fptosi else L.build_zext)
+                e' i32_t "tmp" builder
           | _ -> e' )
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
           L.build_call printf_func
