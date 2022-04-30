@@ -12,7 +12,8 @@ let translate (globals, functions) =
   let i32_t = L.i32_type context
   and i8_t = L.i8_type context
   and i1_t = L.i1_type context
-  and float_t = L.float_type context in
+  and float_t = L.float_type context
+  and double_t = L.double_type context in
   (* Return the LLVM type for a Stark type *)
   let ltype_of_typ = function
     | A.Int -> i32_t
@@ -142,7 +143,8 @@ let translate (globals, functions) =
             "printf" builder
       | SCall ("printf", [e]) ->
           L.build_call printf_func
-            [|float_format_str; build_expr builder e|]
+            [| float_format_str
+             ; L.build_fpext (build_expr builder e) double_t "" builder |]
             "printf" builder
       | SCall ("printc", [e]) ->
           L.build_call printf_func

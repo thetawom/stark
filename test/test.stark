@@ -3,11 +3,10 @@ function main () as int {
     define f as int;
     define c as char;
     c <- 'a';
-    printc(c);
+    printf(0.32);
     print(1.2 as int);
     print(-3.2 as int);
     print(true as int);
     print(false as int);
-    print('a' as int);
     print('@' as int);
 }
