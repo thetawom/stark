@@ -24,7 +24,7 @@ let () =
     ; ("-s", Arg.Unit (set_action Sast), "Print the SAST")
     ; ("-l", Arg.Unit (set_action LLVM_IR), "Print the generated LLVM IR") ]
   in
-  let usage_msg = "usage: ./stark.native [-a|-s|-l] [file.mc]" in
+  let usage_msg = "usage: ./stark [-a|-s|-l] [file.mc]" in
   let channel = ref stdin in
   Arg.parse speclist (fun filename -> channel := open_in filename) usage_msg ;
   let lexbuf = Lexing.from_channel !channel in

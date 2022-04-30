@@ -1,4 +1,11 @@
 function main () as int {
-    define c as char;
-    c <- ~ ( ~ (~ (~ 'a' as int) + 1) as char );
+    define i as int;
+    i <- 3;
+    i <- add(i, 2);
+    // add(i, 5);
+    print(i);
+}
+
+function add (i as int, j as int) as int {
+    return i + j;
 }
