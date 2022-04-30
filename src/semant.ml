@@ -125,21 +125,23 @@ let check (globals, functions) =
             in
             (t, SBinop ((t1, e1'), op, (t2, e2')))
           else raise (Failure err)
-      | Cast (ty, e1) as e ->
-          let t1', e1' = check_expr e1 in
-          if ty == t1' then (t1', e1')
+      | Cast (to_ty, e1) as e ->
+          let fr_ty, e1' = check_expr e1 in
+          if to_ty == fr_ty then (fr_ty, e1')
           else
             let err =
-              "illegal cast of " ^ string_of_typ t1' ^ " to "
-              ^ string_of_typ ty ^ " in " ^ string_of_expr e
+              "illegal cast of " ^ string_of_typ fr_ty ^ " to "
+              ^ string_of_typ to_ty ^ " in " ^ string_of_expr e
             in
             let t =
-              match t1' with
-              | (Bool | Char | Float) when ty = Int -> Int
-              | (Bool | Char | Int) when ty = Float -> Float
+              match fr_ty with
+              | (Bool | Char | Float) when to_ty = Int -> Int
+              | (Bool | Char | Int) when to_ty = Float -> Float
+              | (Bool | Int | Float) when to_ty = Char -> Char
+              | (Char | Int) when to_ty = Bool -> Bool
               | _ -> raise (Failure err)
             in
-            (t, SCast (t, (t1', e1')))
+            (t, SCast (t, (fr_ty, e1')))
       | Call (fname, args) as call ->
           let fd = find_func fname in
           let param_length = List.length fd.formals in

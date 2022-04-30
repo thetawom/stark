@@ -69,11 +69,11 @@ rule token = parse
 | "true"                                { BLIT(true) }
 | "false"                               { BLIT(false) }
 
-| alpha (digit | alpha | '_')* as lem   { ID(lem) }
-| digit+ as lem                         { ILIT(int_of_string lem) }
-| '\'' (( ascii | digit ) as lem) '\''  { CLIT(lem) }
-| digit+ ['.'] digit+ as lem            { FLIT(float_of_string lem)}
-| '\"' ((ascii | escape)* as lem) '\"'  { SLIT(lem) }
+| alpha (digit | alpha | '_')* as lem       { ID(lem) }
+| ('-' | '+' )? digit+ as lem               { ILIT(int_of_string lem) }
+| '\'' (( ascii | digit ) as lem) '\''      { CLIT(lem) }
+| ('-' | '+' )? digit+ ['.'] digit+ as lem  { FLIT(float_of_string lem)}
+| '\"' ((ascii | escape)* as lem) '\"'      { SLIT(lem) }
 
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }

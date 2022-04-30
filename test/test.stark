@@ -1,6 +1,6 @@
 function main () as int {
-    printf(-3.2 as float);
-    printf('a' as float);
-    printf(true as float);
-    printf(false as float);
+    printb('a' as bool);
+    printb((3 - 3) as bool);
+    printb(true as bool);
+    printb(false as bool);
 }

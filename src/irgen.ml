@@ -134,11 +134,19 @@ let translate (globals, functions) =
           let t2 = L.type_of e' in
           match t1 with
           | A.Int ->
-              (if t2 == float_t then L.build_fptosi else L.build_zext)
+              ( if t2 == float_t then L.build_fptosi
+              else if t2 == i8_t then L.build_sext
+              else L.build_zext )
                 e' i32_t "tmp" builder
           | A.Float ->
               (if t2 == i1_t then L.build_uitofp else L.build_sitofp)
                 e' float_t "tmp" builder
+          | A.Char ->
+              ( if t2 == float_t then L.build_fptosi
+              else if t2 == i32_t then L.build_trunc
+              else L.build_zext )
+                e' i8_t "tmp" builder
+          | A.Bool -> L.build_trunc e' i1_t "tmp" builder
           | _ -> e' )
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
           L.build_call printf_func
