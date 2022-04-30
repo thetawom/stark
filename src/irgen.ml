@@ -136,6 +136,9 @@ let translate (globals, functions) =
           | A.Int ->
               (if t2 == float_t then L.build_fptosi else L.build_zext)
                 e' i32_t "tmp" builder
+          | A.Float ->
+              (if t2 == i1_t then L.build_uitofp else L.build_sitofp)
+                e' float_t "tmp" builder
           | _ -> e' )
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
           L.build_call printf_func

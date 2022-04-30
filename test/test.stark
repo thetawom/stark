@@ -1,10 +1,6 @@
 function main () as int {
-    define i as int;
-    define f as int;
-    define c as char;
-    c <- 'a';
-    i <- (c as int);
-    print(c as int);
-    print(i);
-    print((1.2 + 1.0) as int + 2);
+    printf(-3.2 as float);
+    printf('a' as float);
+    printf(true as float);
+    printf(false as float);
 }

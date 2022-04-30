@@ -136,6 +136,7 @@ let check (globals, functions) =
             let t =
               match t1' with
               | (Bool | Char | Float) when ty = Int -> Int
+              | (Bool | Char | Int) when ty = Float -> Float
               | _ -> raise (Failure err)
             in
             (t, SCast (t, (t1', e1')))
