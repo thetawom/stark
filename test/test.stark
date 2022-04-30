@@ -1,12 +1,13 @@
 function main () as int {
     define i as int;
-    define j as int;
+    define f as int;
     define c as char;
-    c <- ~'a';
-    ~"Hello";
-    printf(1.0);
-
-    for i from 1 to 3 every 2 {
-        ~j <- ~ (2 * (~i + 1)) + 1;
-    }
+    c <- 'a';
+    printc(c);
+    print(1.2 as int);
+    print(-3.2 as int);
+    print(true as int);
+    print(false as int);
+    print('a' as int);
+    print('@' as int);
 }

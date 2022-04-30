@@ -28,6 +28,7 @@ type expr =
   | Id of string
   | Unop of uop * expr
   | Binop of expr * bop * expr
+  | Cast of typ * expr
   | Call of string * expr list
 
 type stmt =
@@ -53,6 +54,14 @@ type func_def =
 type program = bind list * func_def list
 
 (* Pretty-printing functions *)
+
+let string_of_typ = function
+  | Int -> "int"
+  | Bool -> "bool"
+  | Char -> "char"
+  | Float -> "float"
+  | String -> "string"
+
 let string_of_bop = function
   | Plus -> "+"
   | Minus -> "-"
@@ -86,6 +95,7 @@ let rec string_of_expr = function
   | Binop (e1, o, e2) ->
       "(" ^ string_of_expr e1 ^ " " ^ string_of_bop o ^ " "
       ^ string_of_expr e2 ^ ")"
+  | Cast (t, e) -> string_of_typ t ^ "(" ^ string_of_expr e ^ ")"
   | Call (f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
 

@@ -128,6 +128,14 @@ let translate (globals, functions) =
           | A.And -> L.build_and
           | A.Or -> L.build_or )
             e1' e2' "tmp" builder
+      | SCast (t1, e) -> (
+          let e' = build_expr builder e in
+          let t2 = L.type_of e' in
+          match t1 with
+          | A.Int ->
+              (if t2 == float_t then L.const_fptosi else L.const_zext)
+                e' i32_t
+          | _ -> e' )
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
           L.build_call printf_func
             [|int_format_str; build_expr builder e|]

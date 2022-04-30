@@ -30,7 +30,9 @@ open Ast
 %left LT GT LTE GTE
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
-%right NOT TILDE
+%right NOT
+%right AS
+%right TILDE
 
 %%
 
@@ -131,6 +133,7 @@ expr:
   | expr GTE expr       { Binop ($1, Gte, $3) }
   | expr AND expr       { Binop ($1, And, $3) }
   | expr OR expr        { Binop ($1, Or, $3) }
+  | expr AS INT         { Cast (Int, $1) }
   | LPAREN expr RPAREN  { $2 }
   | ID LPAREN args_opt RPAREN { Call ($1, $3)  }
 

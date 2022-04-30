@@ -13,6 +13,7 @@ and sx =
   | SId of string
   | SUnop of uop * sexpr
   | SBinop of sexpr * bop * sexpr
+  | SCast of typ * sexpr
   | SCall of string * sexpr list
 
 type sstmt =
@@ -50,6 +51,7 @@ let rec string_of_sexpr (t, e) =
     | SBinop (e1, o, e2) ->
         "(" ^ string_of_sexpr e1 ^ " " ^ string_of_bop o ^ " "
         ^ string_of_sexpr e2 ^ ")"
+    | SCast (t, e) -> string_of_typ t ^ "(" ^ string_of_sexpr e ^ ")"
     | SCall (_, _) -> "" )
   ^ ")"
 
