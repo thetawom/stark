@@ -1,9 +1,4 @@
 function main () as int {
     define c as char;
-    ~ 3.2;
-    ~ 6;
-    ~ "Hello World";
-    printc ( ~ (~ (~ 'a' as int) + 1) as char );
-    ~ true;
-    ~ false;
+    c <- ~ ( ~ (~ (~ 'a' as int) + 1) as char );
 }

@@ -66,8 +66,8 @@ rule token = parse
 | "float"       { FLOAT }
 | "string"      { STRING }
 
-| "true"                                { BLIT(true) }
-| "false"                               { BLIT(false) }
+| "true"        { BLIT(true) }
+| "false"       { BLIT(false) }
 
 | alpha (digit | alpha | '_')* as lem       { ID(lem) }
 | ('-' | '+' )? digit+ as lem               { ILIT(int_of_string lem) }
