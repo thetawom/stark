@@ -4,7 +4,7 @@
 open Ast
 %}
 
-%token LPAREN RPAREN LBRACE RBRACE SEMI COMMA TILDE
+%token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE SEMI COMMA TILDE
 %token PLUS MINUS TIMES DIVIDE MOD
 %token ASSIGN INCR_ASN DECR_ASN MULT_ASN DIVI_ASN BY
 %token EQ NEQ LT GT LTE GTE
@@ -72,11 +72,12 @@ vdecl:
   | ID AS typ { ($3, $1) }
 
 typ:
-  | INT     { Int  }
-  | BOOL    { Bool }
-  | CHAR    { Char }
-  | FLOAT   { Float }
-  | STRING  { String }
+  | INT                     { Int  }
+  | BOOL                    { Bool }
+  | CHAR                    { Char }
+  | FLOAT                   { Float }
+  | STRING                  { String }
+  | typ LBRACK ILIT RBRACK  { Array ($1, $3) }
 
 stmt_list:
   | /* nothing */   { [] }
@@ -110,31 +111,33 @@ cond:
   | IF expr block                   { If ($2, $3) }
 
 expr:
-  | ILIT                { IntLit $1 }
-  | BLIT                { BoolLit $1 }
-  | CLIT                { CharLit $1 }
-  | FLIT                { FloatLit $1 }
-  | SLIT                { StringLit $1 }
-  | ID                  { Id $1 }
-  | PLUS expr           { Unop (Pos, $2) }
-  | MINUS expr          { Unop (Neg, $2) }
-  | NOT expr            { Unop (Not, $2) }
-  | TILDE expr          { Unop (Til, $2) }
-  | expr PLUS expr      { Binop ($1, Plus, $3) }
-  | expr MINUS expr     { Binop ($1, Minus, $3) }
-  | expr TIMES expr     { Binop ($1, Times, $3) }
-  | expr DIVIDE expr    { Binop ($1, Divide, $3) }
-  | expr MOD expr       { Binop ($1, Mod, $3) }
-  | expr EQ expr        { Binop ($1, Eq, $3) }
-  | expr NEQ expr       { Binop ($1, Neq, $3) }
-  | expr LT expr        { Binop ($1, Lt, $3) }
-  | expr GT expr        { Binop ($1, Gt, $3) }
-  | expr LTE expr       { Binop ($1, Lte, $3) }
-  | expr GTE expr       { Binop ($1, Gte, $3) }
-  | expr AND expr       { Binop ($1, And, $3) }
-  | expr OR expr        { Binop ($1, Or, $3) }
-  | expr AS typ         { Cast ($3, $1) }
-  | LPAREN expr RPAREN  { $2 }
+  | ILIT                      { IntLit $1 }
+  | BLIT                      { BoolLit $1 }
+  | CLIT                      { CharLit $1 }
+  | FLIT                      { FloatLit $1 }
+  | SLIT                      { StringLit $1 }
+  | LBRACE args RBRACE        { ArrayLit $2 }
+  | ID                        { Id $1 }
+  | ID LBRACK expr RBRACK     { ArrayAcc ($1, $3) }
+  | PLUS expr                 { Unop (Pos, $2) }
+  | MINUS expr                { Unop (Neg, $2) }
+  | NOT expr                  { Unop (Not, $2) }
+  | TILDE expr                { Unop (Til, $2) }
+  | expr PLUS expr            { Binop ($1, Plus, $3) }
+  | expr MINUS expr           { Binop ($1, Minus, $3) }
+  | expr TIMES expr           { Binop ($1, Times, $3) }
+  | expr DIVIDE expr          { Binop ($1, Divide, $3) }
+  | expr MOD expr             { Binop ($1, Mod, $3) }
+  | expr EQ expr              { Binop ($1, Eq, $3) }
+  | expr NEQ expr             { Binop ($1, Neq, $3) }
+  | expr LT expr              { Binop ($1, Lt, $3) }
+  | expr GT expr              { Binop ($1, Gt, $3) }
+  | expr LTE expr             { Binop ($1, Lte, $3) }
+  | expr GTE expr             { Binop ($1, Gte, $3) }
+  | expr AND expr             { Binop ($1, And, $3) }
+  | expr OR expr              { Binop ($1, Or, $3) }
+  | expr AS typ               { Cast ($3, $1) }
+  | LPAREN expr RPAREN        { $2 }
   | ID LPAREN args_opt RPAREN { Call ($1, $3)  }
 
 /* args_opt*/

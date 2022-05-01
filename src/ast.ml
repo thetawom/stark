@@ -17,7 +17,7 @@ type bop =
   | And
   | Or
 
-type typ = Int | Bool | Char | Float | String
+type typ = Int | Bool | Char | Float | String | Array of typ * int
 
 type expr =
   | IntLit of int
@@ -25,7 +25,9 @@ type expr =
   | CharLit of char
   | FloatLit of float
   | StringLit of string
+  | ArrayLit of expr list
   | Id of string
+  | ArrayAcc of string * expr
   | Unop of uop * expr
   | Binop of expr * bop * expr
   | Cast of typ * expr
@@ -55,12 +57,13 @@ type program = bind list * func_def list
 
 (* Pretty-printing functions *)
 
-let string_of_typ = function
+let rec string_of_typ = function
   | Int -> "int"
   | Bool -> "bool"
   | Char -> "char"
   | Float -> "float"
   | String -> "string"
+  | Array (ty, sz) -> string_of_typ ty ^ "[" ^ string_of_int sz ^ "]"
 
 let string_of_bop = function
   | Plus -> "+"
@@ -90,7 +93,10 @@ let rec string_of_expr = function
   | CharLit c -> "'" ^ String.make 1 c ^ "'"
   | FloatLit f -> string_of_float f
   | StringLit s -> "\"" ^ s ^ "\""
+  | ArrayLit el ->
+      "{" ^ String.concat ", " (List.map string_of_expr el) ^ "}"
   | Id s -> s
+  | ArrayAcc (s, e) -> s ^ "[" ^ string_of_expr e ^ "]"
   | Unop (o, e) -> string_of_uop o ^ string_of_expr e
   | Binop (e1, o, e2) ->
       "(" ^ string_of_expr e1 ^ " " ^ string_of_bop o ^ " "
@@ -115,13 +121,6 @@ let rec string_of_stmt = function
       "do\n" ^ string_of_stmt s ^ "while (" ^ string_of_expr e ^ ");\n"
   | Expr expr -> string_of_expr expr ^ ";\n"
   | Return expr -> "return " ^ string_of_expr expr ^ ";\n"
-
-let string_of_typ = function
-  | Int -> "int"
-  | Bool -> "bool"
-  | Char -> "char"
-  | Float -> "float"
-  | String -> "string"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

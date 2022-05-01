@@ -10,7 +10,9 @@ and sx =
   | SCharLit of char
   | SFloatLit of float
   | SStringLit of string
+  | SArrayLit of sexpr list
   | SId of string
+  | SArrayAcc of string * sexpr
   | SUnop of uop * sexpr
   | SBinop of sexpr * bop * sexpr
   | SCast of typ * sexpr
@@ -46,7 +48,10 @@ let rec string_of_sexpr (t, e) =
     | SCharLit c -> "'" ^ String.make 1 c ^ "'"
     | SFloatLit f -> string_of_float f
     | SStringLit s -> "\"" ^ s ^ "\""
+    | SArrayLit el ->
+        "{" ^ String.concat ", " (List.map string_of_sexpr el) ^ "}"
     | SId s -> s
+    | SArrayAcc (s, e) -> s ^ "[" ^ string_of_sexpr e ^ "]"
     | SUnop (o, e1) -> string_of_uop o ^ string_of_sexpr e1
     | SBinop (e1, o, e2) ->
         "(" ^ string_of_sexpr e1 ^ " " ^ string_of_bop o ^ " "
@@ -85,7 +90,7 @@ let string_of_sfdecl fdecl =
   ^ "}\n"
 
 let string_of_sprogram (vars, funcs) =
-  "\n\nSementically checked program: \n\n"
+  "\n\nSemantically checked program: \n\n"
   ^ String.concat "" (List.map string_of_vdecl vars)
   ^ "\n"
   ^ String.concat "\n" (List.map string_of_sfdecl funcs)

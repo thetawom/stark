@@ -1,11 +1,8 @@
 function main () as int {
+    define arr as string[3];
     define i as int;
-    i <- 3;
-    i <- add(i, 2);
-    // add(i, 5);
-    print(i);
-}
-
-function add (i as int, j as int) as int {
-    return i + j;
+    arr <- {"Hello", "World", "!"};
+    for i from 0 to 2 every 1 {
+        arr[i] <- 2;
+    }
 }

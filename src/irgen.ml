@@ -15,12 +15,13 @@ let translate (globals, functions) =
   and float_t = L.float_type context
   and double_t = L.double_type context in
   (* Return the LLVM type for a Stark type *)
-  let ltype_of_typ = function
+  let rec ltype_of_typ = function
     | A.Int -> i32_t
     | A.Bool -> i1_t
     | A.Char -> i8_t
     | A.Float -> float_t
     | A.String -> L.pointer_type i8_t
+    | A.Array (ty, _) -> L.pointer_type (ltype_of_typ ty)
   in
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
@@ -94,7 +95,28 @@ let translate (globals, functions) =
       | SFloatLit f -> L.const_float float_t f
       | SCharLit c -> L.const_int i8_t (Char.code c)
       | SStringLit s -> L.build_global_stringptr s "str" builder
+      | SArrayLit el ->
+          let el' = List.map (build_expr builder) el in
+          let arr =
+            L.build_array_alloca
+              (L.type_of (List.hd el'))
+              (L.const_int i32_t (List.length el'))
+              "" builder
+          in
+          ignore
+            (let store p e' =
+               let _ = L.build_store e' p builder in
+               L.build_in_bounds_gep p [|L.const_int i32_t 1|] "" builder
+             in
+             List.fold_left store arr el' ) ;
+          arr
       | SId s -> L.build_load (lookup s) s builder
+      | SArrayAcc (s, e) ->
+          let e' = build_expr builder e in
+          let s' = L.build_load (lookup s) s builder in
+          L.build_load
+            (L.build_in_bounds_gep s' [|e'|] "" builder)
+            "" builder
       | SUnop (op, e) -> (
           let e' = build_expr builder e in
           match op with

@@ -85,7 +85,30 @@ let check (globals, functions) =
       | CharLit l -> (Char, SCharLit l)
       | FloatLit l -> (Float, SFloatLit l)
       | StringLit l -> (String, SStringLit l)
+      | ArrayLit el as e ->
+          let err =
+            "array contains inconsistent types in " ^ string_of_expr e
+          in
+          let el' = List.map check_expr el in
+          let rec check_array = function
+            | [] -> raise (Failure "invalid array")
+            | [(t, _)] -> t
+            | (t, _) :: tl ->
+                if t == check_array tl then t else raise (Failure err)
+          in
+          let ty = check_array el' in
+          (Array (ty, List.length el), SArrayLit el')
       | Id var -> (type_of_identifier var, SId var)
+      | ArrayAcc (var, e2) as e -> (
+          let t2, e2' = check_expr e2 in
+          let err = "array index must be integer in " ^ string_of_expr e in
+          if t2 != Int then raise (Failure err)
+          else
+            let err = "invalid array access in " ^ string_of_expr e in
+            let t1 = type_of_identifier var in
+            match t1 with
+            | Array (t, _) -> (t, SArrayAcc (var, (t2, e2')))
+            | _ -> raise (Failure err) )
       | Unop (op, e1) as e ->
           let t1, e1' = check_expr e1 in
           let err =
@@ -97,7 +120,10 @@ let check (globals, functions) =
             | (Pos | Neg) when t1 = Int -> Int
             | (Pos | Neg) when t1 = Float -> Float
             | Not when t1 = Bool -> Bool
-            | Til -> t1
+            | Til
+              when t1 = Int || t1 = Bool || t1 = Float || t1 = Char
+                   || t1 = String ->
+                t1
             | _ -> raise (Failure err)
           in
           (t, SUnop (op, (t1, e1')))
