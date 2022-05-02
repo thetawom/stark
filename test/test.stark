@@ -3,6 +3,10 @@ function main () as int {
     define i as int;
     arr <- {"Hello", "World", "!"};
     for i from 0 to 2 every 1 {
-        arr[i] <- 2;
+        prints(arr[i]);
+    }
+    arr[1] <- "Universe";
+    for i from 0 to 2 every 1 {
+        prints(arr[i]);
     }
 }

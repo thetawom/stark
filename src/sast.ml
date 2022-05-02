@@ -26,6 +26,7 @@ type sstmt =
   | SFor of string * sexpr * sexpr * sexpr * sstmt
   | SRepUntil of sexpr * sstmt
   | SAssign of string * sexpr
+  | SArrayAsg of string * sexpr * sexpr
   | SExpr of sexpr
   | SReturn of sexpr
 
@@ -69,6 +70,8 @@ let rec string_of_sstmt = function
   | SIf (e, s) -> "if (" ^ string_of_sexpr e ^ ")\n" ^ string_of_sstmt s
   | SWhile (e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
   | SAssign (v, e) -> v ^ " = " ^ string_of_sexpr e ^ ";\n"
+  | SArrayAsg (v, e1, e2) ->
+      v ^ "[" ^ string_of_sexpr e1 ^ "] = " ^ string_of_sexpr e2 ^ ";\n"
   | SFor (v, e1, e2, e3, s) ->
       "for (" ^ v ^ " = " ^ string_of_sexpr e1 ^ "; i <= "
       ^ string_of_sexpr e2 ^ "; i = i + " ^ string_of_sexpr e3 ^ ")\n"

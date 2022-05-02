@@ -237,6 +237,21 @@ let check (globals, functions) =
           in
           let _ = check_assign lt rt err in
           SAssign (var, (rt, e'))
+      | ArrayAsg (var, e1, e2) as ex -> (
+          let t1, e1' = check_expr e1 and t2, e2' = check_expr e2 in
+          let err = "array index must be integer in " ^ string_of_stmt ex in
+          if t1 != Int then raise (Failure err)
+          else
+            let t1 = type_of_identifier var in
+            match t1 with
+            | Array (t, _) when t == t2 ->
+                SArrayAsg (var, (t1, e1'), (t2, e2'))
+            | _ ->
+                let err =
+                  "illegal assignment " ^ string_of_typ t1 ^ " element = "
+                  ^ string_of_typ t2 ^ " in " ^ string_of_stmt ex
+                in
+                raise (Failure err) )
       | Expr e -> SExpr (check_expr e)
       | Return e ->
           let t, e' = check_expr e in

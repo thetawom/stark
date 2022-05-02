@@ -41,6 +41,7 @@ type stmt =
   | For of string * expr * expr * expr * stmt
   | RepUntil of expr * stmt
   | Assign of string * expr
+  | ArrayAsg of string * expr * expr
   | Expr of expr
   | Return of expr
 
@@ -114,6 +115,8 @@ let rec string_of_stmt = function
   | If (e, s) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | While (e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Assign (v, e) -> v ^ " = " ^ string_of_expr e ^ ";\n"
+  | ArrayAsg (v, e1, e2) ->
+      v ^ "[" ^ string_of_expr e1 ^ "] = " ^ string_of_expr e2 ^ ";\n"
   | For (v, e1, e2, e3, s) ->
       "for (" ^ v ^ " = " ^ string_of_expr e1 ^ "; i <= " ^ string_of_expr e2
       ^ "; i = i + " ^ string_of_expr e3 ^ ")\n" ^ string_of_stmt s

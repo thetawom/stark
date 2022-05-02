@@ -22,6 +22,7 @@ let translate (globals, functions) =
     | A.Float -> float_t
     | A.String -> L.pointer_type i8_t
     | A.Array (ty, _) -> L.pointer_type (ltype_of_typ ty)
+    (* | A.Array (ty, n) -> L.array_type (ltype_of_typ ty) n *)
   in
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
@@ -229,6 +230,21 @@ let translate (globals, functions) =
           let e' = build_expr builder e in
           ignore (L.build_store e' (lookup s) builder) ;
           builder
+      | SArrayAsg (s, e1, e2) ->
+          let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
+          let s' = L.build_load (lookup s) s builder in
+          let p = L.build_in_bounds_gep s' [|e1'|] "" builder in
+          ignore (L.build_store e2' p builder) ;
+          builder
+          (* SArrayLit el -> let el' = List.map (build_expr builder) el in
+             let arr = L.build_array_alloca (L.type_of (List.hd el'))
+             (L.const_int i32_t (List.length el')) "" builder in ignore (let
+             store p e' = let _ = L.build_store e' p builder in
+             L.build_in_bounds_gep p [|L.const_int i32_t 1|] "" builder in
+             List.fold_left store arr el' ) ; arr *)
+          (* let e' = build_expr builder e in let s' = L.build_load (lookup
+             s) s builder in L.build_load (L.build_in_bounds_gep s' [|e'|] ""
+             builder) "" builder *)
       | SIf (predicate, then_stmt) ->
           let bool_val = build_expr builder predicate in
           let then_bb = L.append_block context "then" the_function in
