@@ -145,12 +145,12 @@ let translate (globals, functions) =
                 (L.build_call printf_func
                    ( if ty == float_t then
                      [| float_format_str
-                      ; L.build_fpext (build_expr builder e) double_t ""
+                      ; L.build_fpext (e') double_t ""
                           builder |]
                    else if ty == i8_t then
-                     [|char_format_str; build_expr builder e|]
+                     [|char_format_str; e'|]
                    else if ty == L.pointer_type i8_t then
-                     [|string_format_str; build_expr builder e|]
+                     [|string_format_str; e'|]
                    else [|int_format_str; e'|] )
                    "printf" builder ) ;
               e' )
