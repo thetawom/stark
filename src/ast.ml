@@ -40,6 +40,7 @@ type stmt =
   | If of expr * stmt
   | While of expr * stmt
   | For of string * expr * expr * expr * stmt
+  | ForEach of string * string * stmt
   | RepUntil of expr * stmt
   | Assign of string * expr
   | ArrayW of string * expr * expr
@@ -122,6 +123,8 @@ let rec string_of_stmt = function
   | For (v, e1, e2, e3, s) ->
       "for (" ^ v ^ " = " ^ string_of_expr e1 ^ "; i <= " ^ string_of_expr e2
       ^ "; i = i + " ^ string_of_expr e3 ^ ")\n" ^ string_of_stmt s
+  | ForEach (v, arr, s) ->
+      " for (" ^ v ^ " : " ^ arr ^ ")\n" ^ string_of_stmt s
   | RepUntil (e, s) ->
       "do\n" ^ string_of_stmt s ^ "while (" ^ string_of_expr e ^ ");\n"
   | Expr expr -> string_of_expr expr ^ ";\n"

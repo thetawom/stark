@@ -9,7 +9,7 @@ open Ast
 %token ASSIGN INCR_ASG DECR_ASG MULT_ASG DIVI_ASG BY
 %token EQ NEQ LT GT LTE GTE
 %token AND OR NOT
-%token IF ELSE WHILE FOR FROM TO EVERY REPEAT UNTIL
+%token IF ELSE WHILE FOR FROM TO EVERY REPEAT UNTIL EACH IN
 %token FUNCTION RETURN DEFINE AS
 %token INT BOOL CHAR FLOAT STRING
 %token <string> ID
@@ -88,7 +88,8 @@ stmt:
   | cond                                              { $1 }
   | WHILE expr block                                  { While ($2, $3) }
   | REPEAT block UNTIL expr SEMI                      { RepUntil ($4, $2) }
-  | FOR ID FROM expr TO expr EVERY expr block         { For ($2, $4, $6, $8, $9) }       
+  | FOR ID FROM expr TO expr EVERY expr block         { For ($2, $4, $6, $8, $9) }  
+  | FOR EACH ID IN ID block                           { ForEach ($3, $5, $6) }     
   | ID ASSIGN expr SEMI                               { Assign ($1, $3) }
   | ID LBRACK expr RBRACK ASSIGN expr SEMI            { ArrayW ($1, $3, $6) }
   | asg_op ID BY expr SEMI                            { Assign ($2, Binop (Id $2, $1, $4)) }

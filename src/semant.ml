@@ -235,6 +235,12 @@ let check (globals, functions) =
           in
           let _ = if t == Int then t else raise (Failure err) in
           SFor (var, (t1, e1'), (t2, e2'), (t3, e3'), check_stmt s)
+      | ForEach (v1, v2, s) as ex -> (
+          let t1 = type_of_identifier v1 and t2 = type_of_identifier v2 in
+          let err = "illegal for each loop in " ^ string_of_stmt ex in
+          match t2 with
+          | Array (t, _) when t == t1 -> SForEach (v1, v2, check_stmt s)
+          | _ -> raise (Failure err) )
       | RepUntil (e, st) -> SRepUntil (check_bool_expr e, check_stmt st)
       | Assign (var, e) as ex ->
           let lt = type_of_identifier var and rt, e' = check_expr e in

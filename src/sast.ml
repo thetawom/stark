@@ -25,6 +25,7 @@ type sstmt =
   | SIf of sexpr * sstmt
   | SWhile of sexpr * sstmt
   | SFor of string * sexpr * sexpr * sexpr * sstmt
+  | SForEach of string * string * sstmt
   | SRepUntil of sexpr * sstmt
   | SAssign of string * sexpr
   | SArrayW of string * sexpr * sexpr
@@ -78,6 +79,8 @@ let rec string_of_sstmt = function
       "for (" ^ v ^ " = " ^ string_of_sexpr e1 ^ "; i <= "
       ^ string_of_sexpr e2 ^ "; i = i + " ^ string_of_sexpr e3 ^ ")\n"
       ^ string_of_sstmt s
+  | SForEach (v, arr, s) ->
+      " for (" ^ v ^ " : " ^ arr ^ ")\n" ^ string_of_sstmt s
   | SRepUntil (e, s) ->
       "do\n" ^ string_of_sstmt s ^ "while (" ^ string_of_sexpr e ^ ");\n"
   | SExpr expr -> string_of_sexpr expr ^ ";\n"

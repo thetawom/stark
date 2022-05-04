@@ -301,6 +301,31 @@ let translate (globals, functions) =
                        ; SAssign
                            (var, (ty, SBinop ((ty, SId var), A.Plus, e3))) ]
                    ) ] )
+      | SForEach (var, arr, body) ->
+          let iptr = L.build_alloca i32_t "i" builder in
+          ignore (L.build_store (L.const_int i32_t 0) iptr builder) ;
+          let sz = L.build_load (lookup arr) "sz" builder in
+          let while_bb = L.append_block context "while" the_function in
+          let build_br_while = L.build_br while_bb in
+          ignore (build_br_while builder) ;
+          let while_builder = L.builder_at_end context while_bb in
+          let i = L.build_load iptr "i" while_builder in
+          let bool_val = L.build_icmp L.Icmp.Slt i sz "bool" while_builder in
+          let body_bb = L.append_block context "while_body" the_function in
+          let body_builder = L.builder_at_end context body_bb in
+          ignore (L.build_store i iptr body_builder) ;
+          ignore
+            (L.build_store
+               (L.build_add i (L.const_int i32_t 1) "" body_builder)
+               iptr body_builder ) ;
+          let e =
+            L.build_load (array_ptr arr i body_builder) "e" body_builder
+          in
+          ignore (L.build_store e (lookup var) body_builder) ;
+          add_terminal (build_stmt body_builder body) build_br_while ;
+          let end_bb = L.append_block context "while_end" the_function in
+          ignore (L.build_cond_br bool_val body_bb end_bb while_builder) ;
+          L.builder_at_end context end_bb
     in
     (* Build the code for each statement in the function *)
     let func_builder = build_stmt builder (SBlock fdecl.sbody) in

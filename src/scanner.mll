@@ -57,6 +57,8 @@ rule token = parse
 | "every"       { EVERY }
 | "repeat"      { REPEAT }
 | "until"       { UNTIL }
+| "each"        { EACH }
+| "in"          { IN }
 
 | "function"    { FUNCTION }
 | "return"      { RETURN }
