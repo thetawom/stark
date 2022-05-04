@@ -12,6 +12,6 @@ test: dune
 # 	mv $@ $*
 
 clean :
-	rm -rf test/*.llvm test/*.out _build/
+	rm -rf test/*.ll test/*.out _build/
 
 .PHONY: dune test default clean

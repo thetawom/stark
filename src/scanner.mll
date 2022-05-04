@@ -31,10 +31,10 @@ rule token = parse
 | '%'           { MOD }
 
 | "<-"          { ASSIGN }
-| "incr"        { INCR_ASN }
-| "decr"        { DECR_ASN }
-| "mult"        { MULT_ASN }
-| "divi"        { DIVI_ASN }
+| "incr"        { INCR_ASG }
+| "decr"        { DECR_ASG }
+| "mult"        { MULT_ASG }
+| "divi"        { DIVI_ASG }
 | "by"          { BY }
 
 | "=="          { EQ }

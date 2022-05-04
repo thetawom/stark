@@ -6,7 +6,7 @@ open Ast
 
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE SEMI COMMA TILDE
 %token PLUS MINUS TIMES DIVIDE MOD
-%token ASSIGN INCR_ASN DECR_ASN MULT_ASN DIVI_ASN BY
+%token ASSIGN INCR_ASG DECR_ASG MULT_ASG DIVI_ASG BY
 %token EQ NEQ LT GT LTE GTE
 %token AND OR NOT
 %token IF ELSE WHILE FOR FROM TO EVERY REPEAT UNTIL
@@ -84,24 +84,27 @@ stmt_list:
   | stmt stmt_list  { $1 :: $2 }         
 
 stmt:
-  | block                                       { $1 }
-  | cond                                        { $1 }
-  | WHILE expr block                            { While ($2, $3) }
-  | REPEAT block UNTIL expr SEMI                { RepUntil ($4, $2) }
-  | FOR ID FROM expr TO expr EVERY expr block   { For ($2, $4, $6, $8, $9) }       
-  | ID ASSIGN expr SEMI                         { Assign ($1, $3) }
-  | ID LBRACK expr RBRACK ASSIGN expr SEMI      { ArrayW ($1, $3, $6) }
-  | INCR_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Plus, $4)) }
-  | DECR_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Minus, $4)) }
-  | MULT_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Times, $4)) }
-  | DIVI_ASN ID BY expr SEMI                    { Assign ($2, Binop (Id $2, Divide, $4)) }
-  | TILDE ID ASSIGN expr SEMI                   { Block [ Assign ($2, $4); Expr (Unop (Til, Id $2)) ] }
-  | INCR_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Plus, $5)); Expr (Unop (Til, Id $3)) ] }
-  | DECR_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Minus, $5)); Expr (Unop (Til, Id $3)) ] }
-  | MULT_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Times, $5)); Expr (Unop (Til, Id $3)) ] }
-  | DIVI_ASN TILDE ID BY expr SEMI              { Block [ Assign ($3, Binop (Id $3, Divide, $5)); Expr (Unop (Til, Id $3)) ] }
-  | RETURN expr SEMI                            { Return $2 }
-  | expr SEMI                                   { Expr $1 }
+  | block                                             { $1 }
+  | cond                                              { $1 }
+  | WHILE expr block                                  { While ($2, $3) }
+  | REPEAT block UNTIL expr SEMI                      { RepUntil ($4, $2) }
+  | FOR ID FROM expr TO expr EVERY expr block         { For ($2, $4, $6, $8, $9) }       
+  | ID ASSIGN expr SEMI                               { Assign ($1, $3) }
+  | ID LBRACK expr RBRACK ASSIGN expr SEMI            { ArrayW ($1, $3, $6) }
+  | asg_op ID BY expr SEMI                            { Assign ($2, Binop (Id $2, $1, $4)) }
+  | asg_op ID LBRACK expr RBRACK BY expr SEMI         { ArrayW ($2, $4, Binop (ArrayR ($2, $4), $1, $7)) }
+  | TILDE ID ASSIGN expr SEMI                         { Block [ Assign ($2, $4); Expr (Unop (Til, Id $2)) ] }
+  | TILDE ID LBRACK expr RBRACK ASSIGN expr SEMI      { Block [ ArrayW ($2, $4, $7); Expr (Unop (Til, ArrayR ($2, $4))) ] }
+  | asg_op TILDE ID BY expr SEMI                      { Block [ Assign ($3, Binop (Id $3, $1, $5)); Expr (Unop (Til, Id $3)) ] }
+  | asg_op TILDE ID LBRACK expr RBRACK BY expr SEMI   { Block [ ArrayW ($3, $5, Binop (ArrayR ($3, $5), $1, $8)); Expr (Unop (Til, ArrayR ($3, $5))) ] }
+  | RETURN expr SEMI                                  { Return $2 }
+  | expr SEMI                                         { Expr $1 }
+
+asg_op:
+  | INCR_ASG  { Plus }
+  | DECR_ASG  { Minus }
+  | MULT_ASG  { Times }
+  | DIVI_ASG  { Divide }
 
 block:
   | LBRACE stmt_list RBRACE         { Block $2 }

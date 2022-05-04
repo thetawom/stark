@@ -96,6 +96,7 @@ let translate (globals, functions) =
       try StringMap.find n local_vars
       with Not_found -> StringMap.find n global_vars
     in
+    let array_ptr s e b = L.build_in_bounds_gep (lookup s) [|e|] "" b in
     (* Construct code for an expression; return its value *)
     let rec build_expr builder ((_, e) : sexpr) =
       match e with
@@ -113,9 +114,7 @@ let translate (globals, functions) =
       | SId s -> L.build_load (lookup s) s builder
       | SArrayR (s, e) ->
           let e' = build_expr builder e in
-          L.build_load
-            (L.build_in_bounds_gep (lookup s) [|e'|] "" builder)
-            "" builder
+          L.build_load (array_ptr s e' builder) "" builder
       | SUnop (op, e) -> (
           let e' = build_expr builder e in
           match op with
@@ -230,8 +229,7 @@ let translate (globals, functions) =
           builder
       | SArrayW (s, e1, e2) ->
           let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
-          let p = L.build_in_bounds_gep (lookup s) [|e1'|] "" builder in
-          ignore (L.build_store e2' p builder) ;
+          ignore (L.build_store e2' (array_ptr s e1' builder) builder) ;
           builder
       | SIf (predicate, then_stmt) ->
           let bool_val = build_expr builder predicate in
