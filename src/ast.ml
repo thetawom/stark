@@ -32,6 +32,7 @@ type expr =
   | Binop of expr * bop * expr
   | Cast of typ * expr
   | Call of string * expr list
+  | Len of string
 
 type stmt =
   | Block of stmt list
@@ -105,6 +106,7 @@ let rec string_of_expr = function
   | Cast (t, e) -> string_of_typ t ^ "(" ^ string_of_expr e ^ ")"
   | Call (f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Len s -> "len (" ^ s ^ ")"
 
 let rec string_of_stmt = function
   | Block stmts ->

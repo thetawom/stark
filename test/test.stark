@@ -1,11 +1,4 @@
 function main () as int {
-    define arr as int[3];
+    define arr as int[5];
     define i as int;
-    for i from 0 to 2 every 1 {
-        arr[i] <- i;
-    }
-    for i from 0 to 2 every 1 {
-        incr ~arr[i] by 2 * i;
-    }
-
 }

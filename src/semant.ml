@@ -186,6 +186,15 @@ let check (globals, functions) =
             in
             let args' = List.map2 check_call fd.formals args in
             (fd.rtyp, SCall (fname, args'))
+      | Len var as e -> (
+          let ty = type_of_identifier var in
+          let err =
+            "illegal argument found " ^ string_of_typ ty
+            ^ " expected array in " ^ string_of_expr e
+          in
+          match ty with
+          | Array (_, _) -> (Int, SLen var)
+          | _ -> raise (Failure err) )
     in
     let check_bool_expr e =
       let t, e' = check_expr e in

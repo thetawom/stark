@@ -17,6 +17,7 @@ and sx =
   | SBinop of sexpr * bop * sexpr
   | SCast of typ * sexpr
   | SCall of string * sexpr list
+  | SLen of string
 
 type sstmt =
   | SBlock of sstmt list
@@ -58,7 +59,8 @@ let rec string_of_sexpr (t, e) =
         "(" ^ string_of_sexpr e1 ^ " " ^ string_of_bop o ^ " "
         ^ string_of_sexpr e2 ^ ")"
     | SCast (t, e) -> string_of_typ t ^ "(" ^ string_of_sexpr e ^ ")"
-    | SCall (_, _) -> "" )
+    | SCall (_, _) -> ""
+    | SLen s -> "len (" ^ s ^ ")" )
   ^ ")"
 
 let rec string_of_sstmt = function

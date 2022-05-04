@@ -72,6 +72,8 @@ rule token = parse
 | "true"        { BLIT(true) }
 | "false"       { BLIT(false) }
 
+| "len"         { LEN }
+
 | alpha (digit | alpha | '_')* as lem       { ID(lem) }
 | ('-' | '+' )? digit+ as lem               { ILIT(int_of_string lem) }
 | '\'' (( ascii | digit ) as lem) '\''      { CLIT(lem) }

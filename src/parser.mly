@@ -4,7 +4,7 @@
 open Ast
 %}
 
-%token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE SEMI COMMA TILDE
+%token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE SEMI COMMA TILDE LEN
 %token PLUS MINUS TIMES DIVIDE MOD
 %token ASSIGN INCR_ASG DECR_ASG MULT_ASG DIVI_ASG BY
 %token EQ NEQ LT GT LTE GTE
@@ -143,6 +143,7 @@ expr:
   | expr AS typ               { Cast ($3, $1) }
   | LPAREN expr RPAREN        { $2 }
   | ID LPAREN args_opt RPAREN { Call ($1, $3)  }
+  | LEN LPAREN ID RPAREN      { Len ($3) }
 
 /* args_opt*/
 args_opt:
@@ -151,4 +152,4 @@ args_opt:
 
 args:
   | expr            { [$1] }
-  | expr COMMA args { $1::$3 } 
+  | expr COMMA args { $1::$3 }
