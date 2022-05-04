@@ -163,6 +163,7 @@ let check (globals, functions) =
               | (Bool | Char | Int) when to_ty = Float -> Float
               | (Bool | Int | Float) when to_ty = Char -> Char
               | (Char | Int) when to_ty = Bool -> Bool
+              | Char when to_ty = String -> String
               | _ -> raise (Failure err)
             in
             (t, SCast (t, (fr_ty, e1')))

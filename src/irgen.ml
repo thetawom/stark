@@ -193,6 +193,16 @@ let translate (globals, functions) =
               else L.build_zext )
                 e' i8_t "tmp" builder
           | A.Bool -> L.build_trunc e' i1_t "tmp" builder
+          | A.String when t2 == i8_t ->
+              let s =
+                L.build_array_alloca i8_t (L.const_int i32_t 2) "str" builder
+              in
+              ignore (L.build_store e' s builder) ;
+              ignore
+                (L.build_store (L.const_null i8_t)
+                   (L.build_gep s [|L.const_int i32_t 1|] "" builder)
+                   builder ) ;
+              s
           | _ -> e' )
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
           L.build_call printf_func

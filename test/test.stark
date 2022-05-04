@@ -8,4 +8,6 @@ function main () as int {
     for each s in arr {
         prints(s);
     }
+    s <- 'c' as string;
+    prints(s);
 }
