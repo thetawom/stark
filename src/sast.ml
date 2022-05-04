@@ -10,9 +10,9 @@ and sx =
   | SCharLit of char
   | SFloatLit of float
   | SStringLit of string
-  | SArrayLit of sexpr list
+  (* | SArrayLit of sexpr list *)
   | SId of string
-  | SArrayAcc of string * sexpr
+  | SArrayR of string * sexpr
   | SUnop of uop * sexpr
   | SBinop of sexpr * bop * sexpr
   | SCast of typ * sexpr
@@ -26,7 +26,7 @@ type sstmt =
   | SFor of string * sexpr * sexpr * sexpr * sstmt
   | SRepUntil of sexpr * sstmt
   | SAssign of string * sexpr
-  | SArrayAsg of string * sexpr * sexpr
+  | SArrayW of string * sexpr * sexpr
   | SExpr of sexpr
   | SReturn of sexpr
 
@@ -49,10 +49,10 @@ let rec string_of_sexpr (t, e) =
     | SCharLit c -> "'" ^ String.make 1 c ^ "'"
     | SFloatLit f -> string_of_float f
     | SStringLit s -> "\"" ^ s ^ "\""
-    | SArrayLit el ->
-        "{" ^ String.concat ", " (List.map string_of_sexpr el) ^ "}"
+    (* | SArrayLit el -> "{" ^ String.concat ", " (List.map string_of_sexpr
+       el) ^ "}" *)
     | SId s -> s
-    | SArrayAcc (s, e) -> s ^ "[" ^ string_of_sexpr e ^ "]"
+    | SArrayR (s, e) -> s ^ "[" ^ string_of_sexpr e ^ "]"
     | SUnop (o, e1) -> string_of_uop o ^ string_of_sexpr e1
     | SBinop (e1, o, e2) ->
         "(" ^ string_of_sexpr e1 ^ " " ^ string_of_bop o ^ " "
@@ -70,7 +70,7 @@ let rec string_of_sstmt = function
   | SIf (e, s) -> "if (" ^ string_of_sexpr e ^ ")\n" ^ string_of_sstmt s
   | SWhile (e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
   | SAssign (v, e) -> v ^ " = " ^ string_of_sexpr e ^ ";\n"
-  | SArrayAsg (v, e1, e2) ->
+  | SArrayW (v, e1, e2) ->
       v ^ "[" ^ string_of_sexpr e1 ^ "] = " ^ string_of_sexpr e2 ^ ";\n"
   | SFor (v, e1, e2, e3, s) ->
       "for (" ^ v ^ " = " ^ string_of_sexpr e1 ^ "; i <= "

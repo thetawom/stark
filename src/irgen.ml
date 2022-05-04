@@ -13,7 +13,8 @@ let translate (globals, functions) =
   and i8_t = L.i8_type context
   and i1_t = L.i1_type context
   and float_t = L.float_type context
-  and double_t = L.double_type context in
+  and double_t = L.double_type context
+  and arr_t ltype = L.pointer_type ltype in
   (* Return the LLVM type for a Stark type *)
   let rec ltype_of_typ = function
     | A.Int -> i32_t
@@ -21,8 +22,7 @@ let translate (globals, functions) =
     | A.Char -> i8_t
     | A.Float -> float_t
     | A.String -> L.pointer_type i8_t
-    | A.Array (ty, _) -> L.pointer_type (ltype_of_typ ty)
-    (* | A.Array (ty, n) -> L.array_type (ltype_of_typ ty) n *)
+    | A.Array (ty, _) -> arr_t (ltype_of_typ ty)
   in
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
@@ -73,7 +73,15 @@ let translate (globals, functions) =
       (* Allocate space for any locally declared variables and add the
        * resulting registers to our map *)
       and add_local m (t, n) =
-        let local_var = L.build_alloca (ltype_of_typ t) n builder in
+        let ltype = ltype_of_typ t in
+        let local_var =
+          ( match t with
+          | A.Array (_, sz) ->
+              L.build_array_alloca (L.element_type ltype)
+                (L.const_int i32_t sz)
+          | _ -> L.build_alloca ltype )
+            n builder
+        in
         StringMap.add n local_var m
       in
       let formals =
@@ -96,27 +104,17 @@ let translate (globals, functions) =
       | SFloatLit f -> L.const_float float_t f
       | SCharLit c -> L.const_int i8_t (Char.code c)
       | SStringLit s -> L.build_global_stringptr s "str" builder
-      | SArrayLit el ->
-          let el' = List.map (build_expr builder) el in
-          let arr =
-            L.build_array_alloca
-              (L.type_of (List.hd el'))
-              (L.const_int i32_t (List.length el'))
-              "" builder
-          in
-          ignore
-            (let store p e' =
-               let _ = L.build_store e' p builder in
-               L.build_in_bounds_gep p [|L.const_int i32_t 1|] "" builder
-             in
-             List.fold_left store arr el' ) ;
-          arr
+      (* | SArrayLit el -> let el' = List.map (build_expr builder) el in let
+         arr = L.build_array_alloca (L.type_of (List.hd el')) (L.const_int
+         i32_t (List.length el')) "" builder in ignore (let store p e' = let
+         _ = L.build_store e' p builder in L.build_in_bounds_gep p
+         [|L.const_int i32_t 1|] "" builder in List.fold_left store arr el' )
+         ; arr *)
       | SId s -> L.build_load (lookup s) s builder
-      | SArrayAcc (s, e) ->
+      | SArrayR (s, e) ->
           let e' = build_expr builder e in
-          let s' = L.build_load (lookup s) s builder in
           L.build_load
-            (L.build_in_bounds_gep s' [|e'|] "" builder)
+            (L.build_in_bounds_gep (lookup s) [|e'|] "" builder)
             "" builder
       | SUnop (op, e) -> (
           let e' = build_expr builder e in
@@ -230,21 +228,11 @@ let translate (globals, functions) =
           let e' = build_expr builder e in
           ignore (L.build_store e' (lookup s) builder) ;
           builder
-      | SArrayAsg (s, e1, e2) ->
+      | SArrayW (s, e1, e2) ->
           let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
-          let s' = L.build_load (lookup s) s builder in
-          let p = L.build_in_bounds_gep s' [|e1'|] "" builder in
+          let p = L.build_in_bounds_gep (lookup s) [|e1'|] "" builder in
           ignore (L.build_store e2' p builder) ;
           builder
-          (* SArrayLit el -> let el' = List.map (build_expr builder) el in
-             let arr = L.build_array_alloca (L.type_of (List.hd el'))
-             (L.const_int i32_t (List.length el')) "" builder in ignore (let
-             store p e' = let _ = L.build_store e' p builder in
-             L.build_in_bounds_gep p [|L.const_int i32_t 1|] "" builder in
-             List.fold_left store arr el' ) ; arr *)
-          (* let e' = build_expr builder e in let s' = L.build_load (lookup
-             s) s builder in L.build_load (L.build_in_bounds_gep s' [|e'|] ""
-             builder) "" builder *)
       | SIf (predicate, then_stmt) ->
           let bool_val = build_expr builder predicate in
           let then_bb = L.append_block context "then" the_function in

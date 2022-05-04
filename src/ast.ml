@@ -25,9 +25,9 @@ type expr =
   | CharLit of char
   | FloatLit of float
   | StringLit of string
-  | ArrayLit of expr list
+  (* | ArrayLit of expr list *)
   | Id of string
-  | ArrayAcc of string * expr
+  | ArrayR of string * expr
   | Unop of uop * expr
   | Binop of expr * bop * expr
   | Cast of typ * expr
@@ -41,7 +41,7 @@ type stmt =
   | For of string * expr * expr * expr * stmt
   | RepUntil of expr * stmt
   | Assign of string * expr
-  | ArrayAsg of string * expr * expr
+  | ArrayW of string * expr * expr
   | Expr of expr
   | Return of expr
 
@@ -94,10 +94,10 @@ let rec string_of_expr = function
   | CharLit c -> "'" ^ String.make 1 c ^ "'"
   | FloatLit f -> string_of_float f
   | StringLit s -> "\"" ^ s ^ "\""
-  | ArrayLit el ->
-      "{" ^ String.concat ", " (List.map string_of_expr el) ^ "}"
+  (* | ArrayLit el -> "{" ^ String.concat ", " (List.map string_of_expr el) ^
+     "}" *)
   | Id s -> s
-  | ArrayAcc (s, e) -> s ^ "[" ^ string_of_expr e ^ "]"
+  | ArrayR (s, e) -> s ^ "[" ^ string_of_expr e ^ "]"
   | Unop (o, e) -> string_of_uop o ^ string_of_expr e
   | Binop (e1, o, e2) ->
       "(" ^ string_of_expr e1 ^ " " ^ string_of_bop o ^ " "
@@ -115,7 +115,7 @@ let rec string_of_stmt = function
   | If (e, s) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | While (e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Assign (v, e) -> v ^ " = " ^ string_of_expr e ^ ";\n"
-  | ArrayAsg (v, e1, e2) ->
+  | ArrayW (v, e1, e2) ->
       v ^ "[" ^ string_of_expr e1 ^ "] = " ^ string_of_expr e2 ^ ";\n"
   | For (v, e1, e2, e3, s) ->
       "for (" ^ v ^ " = " ^ string_of_expr e1 ^ "; i <= " ^ string_of_expr e2

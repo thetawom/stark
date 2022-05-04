@@ -1,12 +1,17 @@
 function main () as int {
-    define arr as string[3];
+    define arr as int[3];
+    define arr2 as string[2];
     define i as int;
-    // arr <- {"Hello", "World", "!"};
+    i <- 0;
     for i from 0 to 2 every 1 {
-        prints(arr[i]);
+        arr[i] <- i * 2 + 1;
     }
-    arr[1] <- "Universe";
     for i from 0 to 2 every 1 {
-        prints(arr[i]);
+        print(arr[i]);
+    }
+    arr2[0] <- "Hello";
+    arr2[1] <- "World";
+    for i from 0 to 1 every 1 {
+        prints(arr2[i]);
     }
 }
