@@ -84,7 +84,7 @@ rule token = parse
 and multi_comment = parse
   "*/" { token lexbuf }
 | "/*" { raise (Failure("illegal nesting in comments")) }
-| _    { comment lexbuf }
+| _    { multi_comment lexbuf }
 
 and comment = parse
   "\n" { token lexbuf }

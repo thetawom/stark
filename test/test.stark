@@ -9,9 +9,9 @@ function main () as int {
     for i from 0 to 2 every 1 {
         print(arr[i]);
     }
-    arr2[0] <- "Hello";
+    /* arr2[0] <- "Hello";
     arr2[1] <- "World";
     for i from 0 to 1 every 1 {
         prints(arr2[i]);
-    }
+    } */
 }
