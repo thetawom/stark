@@ -14,7 +14,8 @@ let translate (globals, functions) =
   and i1_t = L.i1_type context
   and float_t = L.float_type context
   and double_t = L.double_type context in
-  let string_t = L.pointer_type i8_t in
+  let string_t = L.pointer_type i8_t
+  and arr_t t = L.struct_type context [|i32_t; L.pointer_type t|] in
   (* Return the LLVM type for a Stark type *)
   let rec ltype_of_typ = function
     | A.Int -> i32_t
@@ -22,7 +23,7 @@ let translate (globals, functions) =
     | A.Char -> i8_t
     | A.Float -> float_t
     | A.String -> string_t
-    | A.Array (ty, _) -> L.pointer_type (ltype_of_typ ty)
+    | A.Array (ty, _) -> arr_t (ltype_of_typ ty)
   in
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
@@ -76,13 +77,21 @@ let translate (globals, functions) =
         let ltype = ltype_of_typ t in
         let local_var =
           match t with
-          | A.Array (_, sz) ->
-              let e =
-                L.build_array_alloca (L.element_type ltype)
-                  (L.const_int i32_t (sz + 1))
-                  n builder
+          | A.Array (ty, sz) ->
+              let elltype = ltype_of_typ ty in
+              let sz' = L.const_int i32_t sz in
+              let e = L.build_alloca (arr_t elltype) n builder in
+              let p =
+                L.build_array_alloca elltype sz' (n ^ "_arr") builder
               in
-              ignore (L.build_store (L.const_int i32_t sz) e builder) ;
+              ignore
+                (L.build_store sz'
+                   (L.build_struct_gep e 0 "" builder)
+                   builder ) ;
+              ignore
+                (L.build_store p
+                   (L.build_struct_gep e 1 "" builder)
+                   builder ) ;
               e
           | _ -> L.build_alloca ltype n builder
         in
@@ -100,11 +109,9 @@ let translate (globals, functions) =
       try StringMap.find n local_vars
       with Not_found -> StringMap.find n global_vars
     in
-    let array_ptr s e b =
-      let s' =
-        L.build_in_bounds_gep (lookup s) [|L.const_int i32_t 1|] "" b
-      in
-      L.build_in_bounds_gep s' [|e|] "" b
+    let array_ptr var e builder =
+      let s' = L.build_struct_gep (lookup var) 1 "" builder in
+      L.build_in_bounds_gep (L.build_load s' "" builder) [|e|] "" builder
     in
     (* Construct code for an expression; return its value *)
     let rec build_expr builder ((_, e) : sexpr) =
@@ -211,7 +218,10 @@ let translate (globals, functions) =
           in
           let result = f ^ "_result" in
           L.build_call fdef (Array.of_list llargs) result builder
-      | SLen var -> L.build_load (lookup var) "" builder
+      | SLen var ->
+          L.build_load
+            (L.build_struct_gep (lookup var) 0 "" builder)
+            "" builder
     in
     (* LLVM insists each basic block end with exactly one "terminator"
        instruction that transfers control. This function runs "instr builder"
