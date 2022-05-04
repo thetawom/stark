@@ -1,7 +1,7 @@
 function main () as int {
     define arr as string[3];
     define i as int;
-    arr <- {"Hello", "World", "!"};
+    // arr <- {"Hello", "World", "!"};
     for i from 0 to 2 every 1 {
         prints(arr[i]);
     }
