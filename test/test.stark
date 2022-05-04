@@ -1,10 +1,11 @@
 function main () as int {
     define arr as string[3];
     define i as int;
+    define s as string;
     arr[0] <- "Hello";
     arr[1] <- "World";
     arr[2] <- "!";
-    for i from 0 to len(arr) - 1 every 1 {
-        prints(arr[i]);
+    for each s in arr {
+        prints(s);
     }
 }

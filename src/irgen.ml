@@ -314,7 +314,11 @@ let translate (globals, functions) =
       | SForEach (var, arr, body) ->
           let iptr = L.build_alloca i32_t "i" builder in
           ignore (L.build_store (L.const_int i32_t 0) iptr builder) ;
-          let sz = L.build_load (lookup arr) "sz" builder in
+          let sz =
+            L.build_load
+              (L.build_struct_gep (lookup arr) 0 "" builder)
+              "" builder
+          in
           let while_bb = L.append_block context "while" the_function in
           let build_br_while = L.build_br while_bb in
           ignore (build_br_while builder) ;
