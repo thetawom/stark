@@ -231,10 +231,12 @@ let check (globals, functions) =
             if t = t1 && t = t2 && t = t3 then t else raise (Failure err)
           in
           let err =
-            "for loop variables must be of type int instead of type "
-            ^ string_of_typ t
+            "for loop variables must be of type int or float instead of \
+             type " ^ string_of_typ t
           in
-          let _ = if t == Int then t else raise (Failure err) in
+          let _ =
+            if t == Int || t == Float then t else raise (Failure err)
+          in
           SFor (var, (t1, e1'), (t2, e2'), (t3, e3'), check_stmt s)
       | ForEach (v1, v2, s) as ex -> (
           let t1 = type_of_identifier v1 and t2 = type_of_identifier v2 in

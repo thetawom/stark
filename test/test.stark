@@ -2,6 +2,7 @@ function main () as int {
     define arr as string[3];
     define i as int;
     define s as string;
+    define f as float;
     arr[0] <- "Hello";
     arr[1] <- "World";
     arr[2] <- "!";
@@ -11,6 +12,7 @@ function main () as int {
     for i from len(arr) - 1 to 0 every -1 {
         prints(arr[i]);
     }
-    s <- 'c' as string;
-    prints(s);
+    for f from 0.0 to 3.3 every 0.3 {
+        printf(f);
+    }
 }
