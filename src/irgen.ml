@@ -182,6 +182,17 @@ let translate (globals, functions) =
       | SBinop (e1, op, e2) ->
           let e1', builder = build_expr builder e1 in
           let e2', builder = build_expr builder e2 in
+          let builder =
+            if op == A.Divide then
+              let divide_by_zero =
+                ( if L.type_of e2' = i32_t then
+                  L.build_icmp L.Icmp.Eq (L.const_int i32_t 0)
+                else L.build_fcmp L.Fcmp.Oeq (L.const_float float_t 0.0) )
+                  e2' "" builder
+              in
+              throw_error divide_by_zero builder "divide by zero"
+            else builder
+          in
           ( ( match op with
             | A.Plus ->
                 if L.type_of e1' = i32_t then L.build_add else L.build_fadd
