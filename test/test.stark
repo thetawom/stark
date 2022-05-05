@@ -1,18 +1,5 @@
 function main () as int {
-    define arr as string[3];
-    define i as int;
-    define s as string;
-    define f as float;
-    arr[0] <- "Hello";
-    arr[1] <- "World";
-    arr[2] <- "!";
-    for each s in arr {
-        prints(s);
-    }
-    for i from len(arr) - 1 to 0 every -1 {
-        prints(arr[i]);
-    }
-    for f from 0.0 to 3.3 every 0.3 {
-        printf(f);
-    }
+    define arr as int[1];
+    arr[0] <- 33;
+    arr[-1] <- 44;
 }

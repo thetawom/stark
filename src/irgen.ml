@@ -109,8 +109,21 @@ let translate (globals, functions) =
       try StringMap.find n local_vars
       with Not_found -> StringMap.find n global_vars
     in
+    let array_sz var builder =
+      L.build_load (L.build_struct_gep (lookup var) 0 "" builder) "" builder
+    in
     let array_ptr var e builder =
       let s' = L.build_struct_gep (lookup var) 1 "" builder in
+      let out_of_bounds =
+        L.build_or
+          (L.build_icmp L.Icmp.Slt e (L.const_int i32_t 0) "" builder)
+          (L.build_icmp L.Icmp.Sge e (array_sz var builder) "" builder)
+          "" builder
+      in
+      ignore
+        (L.build_call printf_func
+           [|int_format_str; out_of_bounds|]
+           "printf" builder ) ;
       L.build_in_bounds_gep (L.build_load s' "" builder) [|e|] "" builder
     in
     (* Construct code for an expression; return its value *)
@@ -228,10 +241,7 @@ let translate (globals, functions) =
           in
           let result = f ^ "_result" in
           L.build_call fdef (Array.of_list llargs) result builder
-      | SLen var ->
-          L.build_load
-            (L.build_struct_gep (lookup var) 0 "" builder)
-            "" builder
+      | SLen var -> array_sz var builder
     in
     (* LLVM insists each basic block end with exactly one "terminator"
        instruction that transfers control. This function runs "instr builder"
@@ -354,11 +364,7 @@ let translate (globals, functions) =
       | SForEach (var, arr, body) ->
           let iptr = L.build_alloca i32_t "i" builder in
           ignore (L.build_store (L.const_int i32_t 0) iptr builder) ;
-          let sz =
-            L.build_load
-              (L.build_struct_gep (lookup arr) 0 "" builder)
-              "" builder
-          in
+          let sz = array_sz arr builder in
           let while_bb = L.append_block context "while" the_function in
           let build_br_while = L.build_br while_bb in
           ignore (build_br_while builder) ;
