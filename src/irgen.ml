@@ -120,128 +120,149 @@ let translate (globals, functions) =
           (L.build_icmp L.Icmp.Sge e (array_sz var builder) "" builder)
           "" builder
       in
+      let err_bb = L.append_block context "err" the_function in
+      let err_builder = L.builder_at_end context err_bb in
       ignore
         (L.build_call printf_func
-           [|int_format_str; out_of_bounds|]
-           "printf" builder ) ;
-      L.build_in_bounds_gep (L.build_load s' "" builder) [|e|] "" builder
+           [| string_format_str
+            ; L.build_global_string "array index out-of-bounds" ""
+                err_builder |]
+           "printf" err_builder ) ;
+      ignore (L.build_ret (L.const_int i32_t 1) err_builder) ;
+      let cont_bb = L.append_block context "cont" the_function in
+      let cont_builder = L.builder_at_end context cont_bb in
+      ignore (L.build_cond_br out_of_bounds err_bb cont_bb builder) ;
+      ( L.build_in_bounds_gep
+          (L.build_load s' "" cont_builder)
+          [|e|] "" cont_builder
+      , cont_builder )
     in
     (* Construct code for an expression; return its value *)
     let rec build_expr builder ((_, e) : sexpr) =
       match e with
-      | SIntLit i -> L.const_int i32_t i
-      | SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
-      | SFloatLit f -> L.const_float float_t f
-      | SCharLit c -> L.const_int i8_t (Char.code c)
-      | SStringLit s -> L.build_global_stringptr s "str" builder
+      | SIntLit i -> (L.const_int i32_t i, builder)
+      | SBoolLit b -> (L.const_int i1_t (if b then 1 else 0), builder)
+      | SFloatLit f -> (L.const_float float_t f, builder)
+      | SCharLit c -> (L.const_int i8_t (Char.code c), builder)
+      | SStringLit s -> (L.build_global_stringptr s "str" builder, builder)
       (* | SArrayLit el -> let el' = List.map (build_expr builder) el in let
          arr = L.build_array_alloca (L.type_of (List.hd el')) (L.const_int
          i32_t (List.length el')) "" builder in ignore (let store p e' = let
          _ = L.build_store e' p builder in L.build_in_bounds_gep p
          [|L.const_int i32_t 1|] "" builder in List.fold_left store arr el' )
          ; arr *)
-      | SId s -> L.build_load (lookup s) s builder
+      | SId s -> (L.build_load (lookup s) s builder, builder)
       | SArrayR (s, e) ->
-          let e' = build_expr builder e in
-          L.build_load (array_ptr s e' builder) "" builder
-      | SUnop (op, e) -> (
-          let e' = build_expr builder e in
-          match op with
-          | A.Pos -> e'
-          | A.Neg ->
-              (if L.type_of e' = i32_t then L.build_neg else L.build_fneg)
-                e' "tmp" builder
-          | A.Not -> L.build_not e' "tmp" builder
-          | A.Til ->
-              let ty = L.type_of e' in
-              ignore
-                (L.build_call printf_func
-                   ( if ty == float_t then
-                     [| float_format_str
-                      ; L.build_fpext (e') double_t ""
-                          builder |]
-                   else if ty == i8_t then
-                     [|char_format_str; e'|]
-                   else if ty == L.pointer_type i8_t then
-                     [|string_format_str; e'|]
-                   else [|int_format_str; e'|] )
-                   "printf" builder ) ;
-              e' )
+          let e', builder = build_expr builder e in
+          let ptr, builder = array_ptr s e' builder in
+          (L.build_load ptr "" builder, builder)
+      | SUnop (op, e) ->
+          let e', builder = build_expr builder e in
+          ( ( match op with
+            | A.Pos -> e'
+            | A.Neg ->
+                (if L.type_of e' = i32_t then L.build_neg else L.build_fneg)
+                  e' "tmp" builder
+            | A.Not -> L.build_not e' "tmp" builder
+            | A.Til ->
+                let ty = L.type_of e' in
+                ignore
+                  (L.build_call printf_func
+                     ( if ty == float_t then
+                       [| float_format_str
+                        ; L.build_fpext e' double_t "" builder |]
+                     else if ty == i8_t then [|char_format_str; e'|]
+                     else if ty == L.pointer_type i8_t then
+                       [|string_format_str; e'|]
+                     else [|int_format_str; e'|] )
+                     "printf" builder ) ;
+                e' )
+          , builder )
       | SBinop (e1, op, e2) ->
-          let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
-          ( match op with
-          | A.Plus ->
-              if L.type_of e1' = i32_t then L.build_add else L.build_fadd
-          | A.Minus ->
-              if L.type_of e1' = i32_t then L.build_sub else L.build_fsub
-          | A.Times ->
-              if L.type_of e1' = i32_t then L.build_mul else L.build_fmul
-          | A.Divide ->
-              if L.type_of e1' = i32_t then L.build_sdiv else L.build_fdiv
-          | A.Mod -> L.build_srem
-          | A.Eq -> L.build_icmp L.Icmp.Eq
-          | A.Neq -> L.build_icmp L.Icmp.Ne
-          | A.Lt -> L.build_icmp L.Icmp.Slt
-          | A.Gt -> L.build_icmp L.Icmp.Sgt
-          | A.Lte -> L.build_icmp L.Icmp.Sle
-          | A.Gte -> L.build_icmp L.Icmp.Sge
-          | A.And -> L.build_and
-          | A.Or -> L.build_or )
-            e1' e2' "tmp" builder
-      | SCast (t1, e) -> (
-          let e' = build_expr builder e in
+          let e1', builder = build_expr builder e1 in
+          let e2', builder = build_expr builder e2 in
+          ( ( match op with
+            | A.Plus ->
+                if L.type_of e1' = i32_t then L.build_add else L.build_fadd
+            | A.Minus ->
+                if L.type_of e1' = i32_t then L.build_sub else L.build_fsub
+            | A.Times ->
+                if L.type_of e1' = i32_t then L.build_mul else L.build_fmul
+            | A.Divide ->
+                if L.type_of e1' = i32_t then L.build_sdiv else L.build_fdiv
+            | A.Mod -> L.build_srem
+            | A.Eq -> L.build_icmp L.Icmp.Eq
+            | A.Neq -> L.build_icmp L.Icmp.Ne
+            | A.Lt -> L.build_icmp L.Icmp.Slt
+            | A.Gt -> L.build_icmp L.Icmp.Sgt
+            | A.Lte -> L.build_icmp L.Icmp.Sle
+            | A.Gte -> L.build_icmp L.Icmp.Sge
+            | A.And -> L.build_and
+            | A.Or -> L.build_or )
+              e1' e2' "tmp" builder
+          , builder )
+      | SCast (t1, e) ->
+          let e', builder = build_expr builder e in
           let t2 = L.type_of e' in
-          match t1 with
-          | A.Int ->
-              ( if t2 == float_t then L.build_fptosi
-              else if t2 == i8_t then L.build_sext
-              else L.build_zext )
-                e' i32_t "tmp" builder
-          | A.Float ->
-              (if t2 == i1_t then L.build_uitofp else L.build_sitofp)
-                e' float_t "tmp" builder
-          | A.Char ->
-              ( if t2 == float_t then L.build_fptosi
-              else if t2 == i32_t then L.build_trunc
-              else L.build_zext )
-                e' i8_t "tmp" builder
-          | A.Bool -> L.build_trunc e' i1_t "tmp" builder
-          | A.String when t2 == i8_t ->
-              let s =
-                L.build_array_alloca i8_t (L.const_int i32_t 2) "str" builder
-              in
-              ignore (L.build_store e' s builder) ;
-              ignore
-                (L.build_store (L.const_null i8_t)
-                   (L.build_gep s [|L.const_int i32_t 1|] "" builder)
-                   builder ) ;
-              s
-          | _ -> e' )
+          ( ( match t1 with
+            | A.Int ->
+                ( if t2 == float_t then L.build_fptosi
+                else if t2 == i8_t then L.build_sext
+                else L.build_zext )
+                  e' i32_t "tmp" builder
+            | A.Float ->
+                (if t2 == i1_t then L.build_uitofp else L.build_sitofp)
+                  e' float_t "tmp" builder
+            | A.Char ->
+                ( if t2 == float_t then L.build_fptosi
+                else if t2 == i32_t then L.build_trunc
+                else L.build_zext )
+                  e' i8_t "tmp" builder
+            | A.Bool -> L.build_trunc e' i1_t "tmp" builder
+            | A.String when t2 == i8_t ->
+                let s =
+                  L.build_array_alloca i8_t (L.const_int i32_t 2) "str"
+                    builder
+                in
+                ignore (L.build_store e' s builder) ;
+                ignore
+                  (L.build_store (L.const_null i8_t)
+                     (L.build_gep s [|L.const_int i32_t 1|] "" builder)
+                     builder ) ;
+                s
+            | _ -> e' )
+          , builder )
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
-          L.build_call printf_func
-            [|int_format_str; build_expr builder e|]
-            "printf" builder
+          let e', builder = build_expr builder e in
+          ( L.build_call printf_func [|int_format_str; e'|] "printf" builder
+          , builder )
       | SCall ("printf", [e]) ->
-          L.build_call printf_func
-            [| float_format_str
-             ; L.build_fpext (build_expr builder e) double_t "" builder |]
-            "printf" builder
+          let e', builder = build_expr builder e in
+          ( L.build_call printf_func
+              [|float_format_str; L.build_fpext e' double_t "" builder|]
+              "printf" builder
+          , builder )
       | SCall ("printc", [e]) ->
-          L.build_call printf_func
-            [|char_format_str; build_expr builder e|]
-            "printf" builder
+          let e', builder = build_expr builder e in
+          ( L.build_call printf_func [|char_format_str; e'|] "printf" builder
+          , builder )
       | SCall ("prints", [e]) ->
-          L.build_call printf_func
-            [|string_format_str; build_expr builder e|]
-            "printf" builder
+          let e', builder = build_expr builder e in
+          ( L.build_call printf_func [|string_format_str; e'|] "printf"
+              builder
+          , builder )
       | SCall (f, args) ->
           let fdef, _ = StringMap.find f function_decls in
           let llargs =
-            List.rev (List.map (build_expr builder) (List.rev args))
+            List.rev
+              (List.map
+                 (let f e = fst (build_expr builder e) in
+                  f )
+                 (List.rev args) )
           in
           let result = f ^ "_result" in
-          L.build_call fdef (Array.of_list llargs) result builder
-      | SLen var -> array_sz var builder
+          (L.build_call fdef (Array.of_list llargs) result builder, builder)
+      | SLen var -> (array_sz var builder, builder)
     in
     (* LLVM insists each basic block end with exactly one "terminator"
        instruction that transfers control. This function runs "instr builder"
@@ -257,22 +278,23 @@ let translate (globals, functions) =
        the one generated by this call) *)
     let rec build_stmt builder = function
       | SBlock sl -> List.fold_left build_stmt builder sl
-      | SExpr e ->
-          ignore (build_expr builder e) ;
-          builder
+      | SExpr e -> snd (build_expr builder e)
       | SReturn e ->
-          ignore (L.build_ret (build_expr builder e) builder) ;
+          let e', builder = build_expr builder e in
+          ignore (L.build_ret e' builder) ;
           builder
       | SAssign (s, e) ->
-          let e' = build_expr builder e in
+          let e', builder = build_expr builder e in
           ignore (L.build_store e' (lookup s) builder) ;
           builder
       | SArrayW (s, e1, e2) ->
-          let e1' = build_expr builder e1 and e2' = build_expr builder e2 in
-          ignore (L.build_store e2' (array_ptr s e1' builder) builder) ;
+          let e1', builder = build_expr builder e1 in
+          let e2', builder = build_expr builder e2 in
+          let ptr, builder = array_ptr s e1' builder in
+          ignore (L.build_store e2' ptr builder) ;
           builder
       | SIf (predicate, then_stmt) ->
-          let bool_val = build_expr builder predicate in
+          let bool_val, builder = build_expr builder predicate in
           let then_bb = L.append_block context "then" the_function in
           ignore (build_stmt (L.builder_at_end context then_bb) then_stmt) ;
           let end_bb = L.append_block context "if_end" the_function in
@@ -282,7 +304,7 @@ let translate (globals, functions) =
           ignore (L.build_cond_br bool_val then_bb end_bb builder) ;
           L.builder_at_end context end_bb
       | SIfElse (predicate, then_stmt, else_stmt) ->
-          let bool_val = build_expr builder predicate in
+          let bool_val, builder = build_expr builder predicate in
           let then_bb = L.append_block context "then" the_function in
           ignore (build_stmt (L.builder_at_end context then_bb) then_stmt) ;
           let else_bb = L.append_block context "else" the_function in
@@ -300,7 +322,7 @@ let translate (globals, functions) =
           (* partial function *)
           ignore (build_br_while builder) ;
           let while_builder = L.builder_at_end context while_bb in
-          let bool_val = build_expr while_builder predicate in
+          let bool_val, while_builder = build_expr while_builder predicate in
           let body_bb = L.append_block context "while_body" the_function in
           add_terminal
             (build_stmt (L.builder_at_end context body_bb) body)
@@ -316,13 +338,13 @@ let translate (globals, functions) =
           let rep_builder =
             build_stmt (L.builder_at_end context loop_bb) body
           in
-          let bool_val = build_expr rep_builder predicate in
+          let bool_val, rep_builder = build_expr rep_builder predicate in
           ignore (L.build_cond_br bool_val end_bb loop_bb rep_builder) ;
           L.builder_at_end context end_bb
       | SFor (var, e1, e2, e3, body) ->
-          let e1' = build_expr builder e1
-          and e2' = build_expr builder e2
-          and e3' = build_expr builder e3 in
+          let e1', builder = build_expr builder e1 in
+          let e2', builder = build_expr builder e2 in
+          let e3', builder = build_expr builder e3 in
           let build_sle =
             if L.type_of e1' = float_t then L.build_fcmp L.Fcmp.Ole
             else L.build_icmp L.Icmp.Sle
@@ -378,9 +400,8 @@ let translate (globals, functions) =
             (L.build_store
                (L.build_add i (L.const_int i32_t 1) "" body_builder)
                iptr body_builder ) ;
-          let e =
-            L.build_load (array_ptr arr i body_builder) "e" body_builder
-          in
+          let ptr, body_builder = array_ptr arr i body_builder in
+          let e = L.build_load ptr "e" body_builder in
           ignore (L.build_store e (lookup var) body_builder) ;
           add_terminal (build_stmt body_builder body) build_br_while ;
           let end_bb = L.append_block context "while_end" the_function in

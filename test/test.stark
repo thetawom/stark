@@ -1,5 +1,6 @@
 function main () as int {
     define arr as int[1];
-    arr[0] <- 33;
-    arr[-1] <- 44;
+    define i as int;
+    arr[0] <- 2 + 6;
+    print(arr[1]);
 }
