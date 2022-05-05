@@ -310,17 +310,47 @@ let translate (globals, functions) =
           ignore (L.build_cond_br bool_val end_bb loop_bb rep_builder) ;
           L.builder_at_end context end_bb
       | SFor (var, e1, e2, e3, body) ->
-          let ty, _ = e1 in
-          build_stmt builder
-            (SBlock
-               [ SAssign (var, e1)
-               ; SWhile
-                   ( (A.Bool, SBinop ((ty, SId var), A.Lte, e2))
-                   , SBlock
-                       [ body
-                       ; SAssign
-                           (var, (ty, SBinop ((ty, SId var), A.Plus, e3))) ]
-                   ) ] )
+          let e1' = build_expr builder e1
+          and e2' = build_expr builder e2
+          and e3' = build_expr builder e3 in
+          ignore (L.build_store e1' (lookup var) builder) ;
+          let load_var builder = L.build_load (lookup var) "" builder in
+          let while_bb = L.append_block context "while" the_function in
+          let build_br_while = L.build_br while_bb in
+          (* partial function *)
+          ignore (build_br_while builder) ;
+          let while_builder = L.builder_at_end context while_bb in
+          let is_incr = L.build_icmp L.Icmp.Sle e1' e2' "" while_builder in
+          let is_under =
+            L.build_icmp L.Icmp.Sle (load_var while_builder) e2' ""
+              while_builder
+          in
+          let is_decr = L.build_icmp L.Icmp.Sge e1' e2' "" while_builder in
+          let is_over =
+            L.build_icmp L.Icmp.Sge (load_var while_builder) e2' ""
+              while_builder
+          in
+          let bool_val =
+            L.build_or
+              (L.build_and is_incr is_under "" while_builder)
+              (L.build_and is_decr is_over "" while_builder)
+              "" while_builder
+          in
+          let body_bb = L.append_block context "while_body" the_function in
+          let body_builder = L.builder_at_end context body_bb in
+          ignore (build_stmt body_builder body) ;
+          ignore
+            (L.build_store
+               (L.build_add (load_var body_builder) e3' "" body_builder)
+               (lookup var) body_builder ) ;
+          add_terminal body_builder build_br_while ;
+          let end_bb = L.append_block context "while_end" the_function in
+          ignore (L.build_cond_br bool_val body_bb end_bb while_builder) ;
+          L.builder_at_end context end_bb
+          (* let ty, _ = e1 in build_stmt builder (SBlock [ SAssign (var, e1)
+             ; SWhile ( (A.Bool, SBinop ((ty, SId var), A.Lte, e2)) , SBlock
+             [ body ; SAssign (var, (ty, SBinop ((ty, SId var), A.Plus, e3)))
+             ] ) ] ) *)
       | SForEach (var, arr, body) ->
           let iptr = L.build_alloca i32_t "i" builder in
           ignore (L.build_store (L.const_int i32_t 0) iptr builder) ;

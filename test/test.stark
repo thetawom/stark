@@ -8,6 +8,9 @@ function main () as int {
     for each s in arr {
         prints(s);
     }
+    for i from len(arr) - 1 to 0 every -1 {
+        prints(arr[i]);
+    }
     s <- 'c' as string;
     prints(s);
 }
