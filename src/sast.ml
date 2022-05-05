@@ -10,7 +10,6 @@ and sx =
   | SCharLit of char
   | SFloatLit of float
   | SStringLit of string
-  (* | SArrayLit of sexpr list *)
   | SId of string
   | SArrayR of string * sexpr
   | SUnop of uop * sexpr
@@ -51,8 +50,6 @@ let rec string_of_sexpr (t, e) =
     | SCharLit c -> "'" ^ String.make 1 c ^ "'"
     | SFloatLit f -> string_of_float f
     | SStringLit s -> "\"" ^ s ^ "\""
-    (* | SArrayLit el -> "{" ^ String.concat ", " (List.map string_of_sexpr
-       el) ^ "}" *)
     | SId s -> s
     | SArrayR (s, e) -> s ^ "[" ^ string_of_sexpr e ^ "]"
     | SUnop (o, e1) -> string_of_uop o ^ string_of_sexpr e1

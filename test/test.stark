@@ -1,6 +1,11 @@
 function main () as int {
-    define arr as int[1];
+    define arr as int[3];
     define i as int;
-    arr[0] <- 2 + 6;
-    print(arr[1]);
+    i <- 0;
+    for i from 0 to 2 every 1 {
+        arr[i] <- 2 * i + 1;
+    }
+    for each i in arr {
+        print(i);
+    }
 }

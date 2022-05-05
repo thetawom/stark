@@ -121,7 +121,6 @@ expr:
   | CLIT                      { CharLit $1 }
   | FLIT                      { FloatLit $1 }
   | SLIT                      { StringLit $1 }
-  // | LBRACE args RBRACE        { ArrayLit $2 }
   | ID                        { Id $1 }
   | ID LBRACK expr RBRACK     { ArrayR ($1, $3) }
   | PLUS expr                 { Unop (Pos, $2) }

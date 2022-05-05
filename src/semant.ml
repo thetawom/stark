@@ -85,12 +85,6 @@ let check (globals, functions) =
       | CharLit l -> (Char, SCharLit l)
       | FloatLit l -> (Float, SFloatLit l)
       | StringLit l -> (String, SStringLit l)
-      (* | ArrayLit el as e -> let err = "array contains inconsistent types
-         in " ^ string_of_expr e in let el' = List.map check_expr el in let
-         rec check_array = function | [] -> raise (Failure "invalid array") |
-         [(t, _)] -> t | (t, _) :: tl -> if t == check_array tl then t else
-         raise (Failure err) in let ty = check_array el' in (Array (ty,
-         List.length el), SArrayLit el') *)
       | Id var -> (type_of_identifier var, SId var)
       | ArrayR (var, e1) as e -> (
           let t1, e1' = check_expr e1 in

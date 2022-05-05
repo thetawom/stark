@@ -3,6 +3,10 @@ default: dune
 dune:
 	dune build
 
+run: dune
+	_build/install/default/bin/stark -l test/test.stark > test/test.ll
+	lli test/test.ll
+
 test: dune
 	_build/install/default/bin/stark -l test/test.stark > test/test.ll
 	lli test/test.ll > test/test0.out
@@ -15,4 +19,4 @@ test: dune
 clean :
 	rm -rf test/*.llvm test/test*.out _build/
 
-.PHONY: dune test default clean
+.PHONY: dune run test default clean

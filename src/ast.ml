@@ -25,7 +25,6 @@ type expr =
   | CharLit of char
   | FloatLit of float
   | StringLit of string
-  (* | ArrayLit of expr list *)
   | Id of string
   | ArrayR of string * expr
   | Unop of uop * expr
@@ -96,8 +95,6 @@ let rec string_of_expr = function
   | CharLit c -> "'" ^ String.make 1 c ^ "'"
   | FloatLit f -> string_of_float f
   | StringLit s -> "\"" ^ s ^ "\""
-  (* | ArrayLit el -> "{" ^ String.concat ", " (List.map string_of_expr el) ^
-     "}" *)
   | Id s -> s
   | ArrayR (s, e) -> s ^ "[" ^ string_of_expr e ^ "]"
   | Unop (o, e) -> string_of_uop o ^ string_of_expr e

@@ -61,6 +61,24 @@ let translate (globals, functions) =
     let float_format_str = L.build_global_stringptr "%f\n" "fmt" builder in
     let char_format_str = L.build_global_stringptr "%c\n" "fmt" builder in
     let string_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
+    let error_msg = L.build_alloca string_t "" builder in
+    let error_bb = L.append_block context "err" the_function in
+    let error_builder = L.builder_at_end context error_bb in
+    ignore
+      (L.build_call printf_func
+         [|string_format_str; L.build_load error_msg "" error_builder|]
+         "printf" error_builder ) ;
+    ignore (L.build_ret (L.const_int i32_t 1) error_builder) ;
+    let throw_error bool_val builder str =
+      ignore
+        (L.build_store
+           (L.build_global_stringptr str "" builder)
+           error_msg builder ) ;
+      let cont_bb = L.append_block context "" the_function in
+      let cont_builder = L.builder_at_end context cont_bb in
+      ignore (L.build_cond_br bool_val error_bb cont_bb builder) ;
+      cont_builder
+    in
     (* Construct the function's "locals": formal arguments and locally
        declared variables. Allocate each on the stack, initialize their
        value, if appropriate, and remember their values in the "locals"
@@ -112,7 +130,7 @@ let translate (globals, functions) =
     let array_sz var builder =
       L.build_load (L.build_struct_gep (lookup var) 0 "" builder) "" builder
     in
-    let array_ptr var e builder =
+    let array_el_ptr var e builder =
       let s' = L.build_struct_gep (lookup var) 1 "" builder in
       let out_of_bounds =
         L.build_or
@@ -120,22 +138,11 @@ let translate (globals, functions) =
           (L.build_icmp L.Icmp.Sge e (array_sz var builder) "" builder)
           "" builder
       in
-      let err_bb = L.append_block context "err" the_function in
-      let err_builder = L.builder_at_end context err_bb in
-      ignore
-        (L.build_call printf_func
-           [| string_format_str
-            ; L.build_global_string "array index out-of-bounds" ""
-                err_builder |]
-           "printf" err_builder ) ;
-      ignore (L.build_ret (L.const_int i32_t 1) err_builder) ;
-      let cont_bb = L.append_block context "cont" the_function in
-      let cont_builder = L.builder_at_end context cont_bb in
-      ignore (L.build_cond_br out_of_bounds err_bb cont_bb builder) ;
-      ( L.build_in_bounds_gep
-          (L.build_load s' "" cont_builder)
-          [|e|] "" cont_builder
-      , cont_builder )
+      let builder =
+        throw_error out_of_bounds builder "array out of bounds"
+      in
+      ( L.build_in_bounds_gep (L.build_load s' "" builder) [|e|] "" builder
+      , builder )
     in
     (* Construct code for an expression; return its value *)
     let rec build_expr builder ((_, e) : sexpr) =
@@ -145,16 +152,10 @@ let translate (globals, functions) =
       | SFloatLit f -> (L.const_float float_t f, builder)
       | SCharLit c -> (L.const_int i8_t (Char.code c), builder)
       | SStringLit s -> (L.build_global_stringptr s "str" builder, builder)
-      (* | SArrayLit el -> let el' = List.map (build_expr builder) el in let
-         arr = L.build_array_alloca (L.type_of (List.hd el')) (L.const_int
-         i32_t (List.length el')) "" builder in ignore (let store p e' = let
-         _ = L.build_store e' p builder in L.build_in_bounds_gep p
-         [|L.const_int i32_t 1|] "" builder in List.fold_left store arr el' )
-         ; arr *)
       | SId s -> (L.build_load (lookup s) s builder, builder)
       | SArrayR (s, e) ->
           let e', builder = build_expr builder e in
-          let ptr, builder = array_ptr s e' builder in
+          let ptr, builder = array_el_ptr s e' builder in
           (L.build_load ptr "" builder, builder)
       | SUnop (op, e) ->
           let e', builder = build_expr builder e in
@@ -290,7 +291,7 @@ let translate (globals, functions) =
       | SArrayW (s, e1, e2) ->
           let e1', builder = build_expr builder e1 in
           let e2', builder = build_expr builder e2 in
-          let ptr, builder = array_ptr s e1' builder in
+          let ptr, builder = array_el_ptr s e1' builder in
           ignore (L.build_store e2' ptr builder) ;
           builder
       | SIf (predicate, then_stmt) ->
@@ -371,7 +372,7 @@ let translate (globals, functions) =
           in
           let body_bb = L.append_block context "while_body" the_function in
           let body_builder = L.builder_at_end context body_bb in
-          ignore (build_stmt body_builder body) ;
+          let body_builder = build_stmt body_builder body in
           ignore
             (L.build_store
                (( if L.type_of e1' = float_t then L.build_fadd
@@ -400,7 +401,7 @@ let translate (globals, functions) =
             (L.build_store
                (L.build_add i (L.const_int i32_t 1) "" body_builder)
                iptr body_builder ) ;
-          let ptr, body_builder = array_ptr arr i body_builder in
+          let ptr, body_builder = array_el_ptr arr i body_builder in
           let e = L.build_load ptr "e" body_builder in
           ignore (L.build_store e (lookup var) body_builder) ;
           add_terminal (build_stmt body_builder body) build_br_while ;
