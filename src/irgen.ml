@@ -205,10 +205,14 @@ let translate (globals, functions) =
             | A.Mod -> L.build_srem
             | A.Eq -> L.build_icmp L.Icmp.Eq
             | A.Neq -> L.build_icmp L.Icmp.Ne
-            | A.Lt -> L.build_icmp L.Icmp.Slt
-            | A.Gt -> L.build_icmp L.Icmp.Sgt
-            | A.Lte -> L.build_icmp L.Icmp.Sle
-            | A.Gte -> L.build_icmp L.Icmp.Sge
+            | A.Lt -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Slt 
+                      else L.build_fcmp L.Fcmp.Ult
+            | A.Gt -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sgt
+                      else L.build_fcmp L.Fcmp.Ugt
+            | A.Lte -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sle
+                      else L.build_fcmp L.Fcmp.Ule
+            | A.Gte -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sge
+                      else L.build_fcmp L.Fcmp.Uge
             | A.And -> L.build_and
             | A.Or -> L.build_or )
               e1' e2' "tmp" builder
