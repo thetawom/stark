@@ -203,8 +203,10 @@ let translate (globals, functions) =
             | A.Divide ->
                 if L.type_of e1' = i32_t then L.build_sdiv else L.build_fdiv
             | A.Mod -> L.build_srem
-            | A.Eq -> L.build_icmp L.Icmp.Eq
-            | A.Neq -> L.build_icmp L.Icmp.Ne
+            | A.Eq -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Eq
+                      else L.build_fcmp L.Fcmp.Ueq
+            | A.Neq -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Ne
+                       else L.build_fcmp L.Fcmp.Une
             | A.Lt -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Slt 
                       else L.build_fcmp L.Fcmp.Ult
             | A.Gt -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sgt
