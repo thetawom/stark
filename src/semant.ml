@@ -126,7 +126,13 @@ let check (globals, functions) =
             ^ string_of_bop op ^ " " ^ string_of_typ t2 ^ " in "
             ^ string_of_expr e
           in
-          (* All binary operators require operands of the same type*)
+          let t1, e1' =
+            if t1 = Int && t2 = Float then (Float, SCast (Float, (Int, e1')))
+            else (t1, e1')
+          and t2, e2' =
+            if t2 = Int && t1 = Float then (Float, SCast (Float, (Int, e2')))
+            else (t2, e2')
+          in
           if t1 = t2 then
             (* Determine expression type based on operator and operand
                types *)
