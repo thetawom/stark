@@ -1,10 +1,11 @@
 // This file tests the following features:
 /*
 - Array declaration, allocation, and access for different data types
-- Variable declarations for floats, strings, arrays
+- Variable declarations for floats, strings, arrays, booleans
 - If statements
 - If-else statements
 - If-else-if statements
+- Function calls with different arguments and return types
 - Implemented runtime error for array out of bounds
 - More tilde logging
 */
@@ -13,6 +14,7 @@ function main() as int {
     define i as int;
     define f as float;
     define s as string;
+    define b as bool;
     define arr1 as int[3];
     define arr2 as string[3];
 
@@ -26,6 +28,11 @@ function main() as int {
     i <- test_if_else(i);
 
     i <- test_if_else_if(i);
+
+    ~b <- false;
+    
+    prints("Boolean");
+    ~b <- test_boolean();
 
     for i from 0 to 2 every 1 {
         arr1[i] <- i;
@@ -70,4 +77,11 @@ function test_if_else_if (i as int) as int {
         print(i);
     }
     return i;
+}
+
+function test_boolean() as bool {
+    if (1 == 1) {
+        return true;
+    }
+    return false;
 }
