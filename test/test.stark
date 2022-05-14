@@ -1,7 +1,9 @@
 function main () as int {
-    define arr as int[3];
-    define i as int;
-    define f as float;
-    ~f <- 2.0 + 1;
-    ~f <- 1;
+    define arr as string[3];
+    define s as string;
+    ~(arr[0]);
+    ~(arr[1]);
+    ~(arr[2]);
+    s <- "abc";
+    prints(s);
 }
