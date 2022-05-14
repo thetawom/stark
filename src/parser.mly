@@ -71,13 +71,16 @@ vdecl_list:
 vdecl:
   | ID AS typ { ($3, $1) }
 
-typ:
+prim_typ : 
   | INT                     { Int  }
   | BOOL                    { Bool }
   | CHAR                    { Char }
   | FLOAT                   { Float }
   | STRING                  { String }
-  | typ LBRACK ILIT RBRACK  { Array ($1, $3) }
+
+typ:
+  | prim_typ { $1 }
+  | prim_typ LBRACK ILIT RBRACK  { Array ($1, $3) }
 
 stmt_list:
   | /* nothing */   { [] }
