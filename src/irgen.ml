@@ -99,7 +99,7 @@ let translate (globals, functions) =
               let elltype = ltype_of_typ ty in
               let sz' = L.const_int i32_t sz in
               let e = L.build_alloca (arr_t elltype) n builder in
-              let p =
+              let ptr =
                 L.build_array_alloca elltype sz' (n ^ "_arr") builder
               in
               ignore
@@ -107,11 +107,23 @@ let translate (globals, functions) =
                    (L.build_struct_gep e 0 "" builder)
                    builder ) ;
               ignore
-                (L.build_store p
+                (L.build_store ptr
                    (L.build_struct_gep e 1 "" builder)
                    builder ) ;
+              let rec init_arr n =
+                ignore
+                  (L.build_store (L.const_null elltype)
+                     (L.build_in_bounds_gep ptr
+                        [|L.const_int i32_t n|]
+                        "" builder )
+                     builder ) ;
+                if n == 0 then e else init_arr (n - 1)
+              in
+              init_arr (sz - 1)
+          | _ ->
+              let e = L.build_alloca ltype n builder in
+              ignore (L.build_store (L.const_null ltype) e builder) ;
               e
-          | _ -> L.build_alloca ltype n builder
         in
         StringMap.add n local_var m
       in
@@ -203,18 +215,24 @@ let translate (globals, functions) =
             | A.Divide ->
                 if L.type_of e1' = i32_t then L.build_sdiv else L.build_fdiv
             | A.Mod -> L.build_srem
-            | A.Eq -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Eq
-                      else L.build_fcmp L.Fcmp.Ueq
-            | A.Neq -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Ne
-                       else L.build_fcmp L.Fcmp.Une
-            | A.Lt -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Slt 
-                      else L.build_fcmp L.Fcmp.Ult
-            | A.Gt -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sgt
-                      else L.build_fcmp L.Fcmp.Ugt
-            | A.Lte -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sle
-                      else L.build_fcmp L.Fcmp.Ule
-            | A.Gte -> if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sge
-                      else L.build_fcmp L.Fcmp.Uge
+            | A.Eq ->
+                if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Eq
+                else L.build_fcmp L.Fcmp.Ueq
+            | A.Neq ->
+                if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Ne
+                else L.build_fcmp L.Fcmp.Une
+            | A.Lt ->
+                if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Slt
+                else L.build_fcmp L.Fcmp.Ult
+            | A.Gt ->
+                if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sgt
+                else L.build_fcmp L.Fcmp.Ugt
+            | A.Lte ->
+                if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sle
+                else L.build_fcmp L.Fcmp.Ule
+            | A.Gte ->
+                if L.type_of e1' = i32_t then L.build_icmp L.Icmp.Sge
+                else L.build_fcmp L.Fcmp.Uge
             | A.And -> L.build_and
             | A.Or -> L.build_or )
               e1' e2' "tmp" builder
