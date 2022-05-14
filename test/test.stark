@@ -1,8 +1,9 @@
 function main () as int {
-    define arr as string[3];
-    define s as string;
-    prints(arr[0]);
-    ~(arr[1]);
-    ~(arr[2]);
-    prints(s);
+    define i as int;
+    i <- 33;
+    if (i == 33) {
+        prints("Hello");
+    } else {
+        prints("Hallo");
+    }
 }

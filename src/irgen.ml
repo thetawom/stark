@@ -74,7 +74,7 @@ let translate (globals, functions) =
         (L.build_store
            (L.build_global_stringptr str "" builder)
            error_msg builder ) ;
-      let cont_bb = L.append_block context "" the_function in
+      let cont_bb = L.append_block context "no_err" the_function in
       let cont_builder = L.builder_at_end context cont_bb in
       ignore (L.build_cond_br bool_val error_bb cont_bb builder) ;
       cont_builder
@@ -338,24 +338,30 @@ let translate (globals, functions) =
       | SIf (predicate, then_stmt) ->
           let bool_val, builder = build_expr builder predicate in
           let then_bb = L.append_block context "then" the_function in
-          ignore (build_stmt (L.builder_at_end context then_bb) then_stmt) ;
+          let then_builder =
+            build_stmt (L.builder_at_end context then_bb) then_stmt
+          in
           let end_bb = L.append_block context "if_end" the_function in
           let build_br_end = L.build_br end_bb in
           (* partial function *)
-          add_terminal (L.builder_at_end context then_bb) build_br_end ;
+          add_terminal then_builder build_br_end ;
           ignore (L.build_cond_br bool_val then_bb end_bb builder) ;
           L.builder_at_end context end_bb
       | SIfElse (predicate, then_stmt, else_stmt) ->
           let bool_val, builder = build_expr builder predicate in
           let then_bb = L.append_block context "then" the_function in
-          ignore (build_stmt (L.builder_at_end context then_bb) then_stmt) ;
+          let then_builder =
+            build_stmt (L.builder_at_end context then_bb) then_stmt
+          in
           let else_bb = L.append_block context "else" the_function in
-          ignore (build_stmt (L.builder_at_end context else_bb) else_stmt) ;
+          let else_builder =
+            build_stmt (L.builder_at_end context else_bb) else_stmt
+          in
           let end_bb = L.append_block context "if_end" the_function in
           let build_br_end = L.build_br end_bb in
           (* partial function *)
-          add_terminal (L.builder_at_end context then_bb) build_br_end ;
-          add_terminal (L.builder_at_end context else_bb) build_br_end ;
+          add_terminal then_builder build_br_end ;
+          add_terminal else_builder build_br_end ;
           ignore (L.build_cond_br bool_val then_bb else_bb builder) ;
           L.builder_at_end context end_bb
       | SWhile (predicate, body) ->
