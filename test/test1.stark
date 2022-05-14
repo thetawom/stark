@@ -1,34 +1,73 @@
 // This file tests the following features:
 /*
+- Array declaration, allocation, and access for different data types
+- Variable declarations for floats, strings, arrays
 - If statements
-- If/else statements
-- If/else-if
-- More variable declarations
-- More print statements
+- If-else statements
+- If-else-if statements
+- Implemented runtime error for array out of bounds
+- More tilde logging
 */
 
 function main() as int {
     define i as int;
     define f as float;
-    ~i <- 100;
-    ~f <- 5.0;
+    define s as string;
+    define arr1 as int[3];
+    define arr2 as string[3];
+
+    s <- "Hello, world!";
+    prints(s);
+
+    f <- 5.0;
+    prints(test_if(f));
+    
+    i <- 50;
+    i <- test_if_else(i);
+
+    i <- test_if_else_if(i);
+
+    for i from 0 to 2 every 1 {
+        arr1[i] <- i;
+    }
+    s <- ~"Array Element";
+    print(arr1[1]);
+    prints("Runtime error:");
+    print(arr1[5]);
 }
 
-/*function test_if (f as float) as bool {
+function test_if (f as float) as string {
+    prints("If Statement");
     if (f > 0.0) {
-        return true;
+        return "It is greater than 0.0.";
     }
-    return false;
-}*/
+    return "It is less than or equal to 0.0.";
+}
 
 function test_if_else (i as int) as int {
+    prints("If-Else Statements");
+    if (i < 60) {
+        i <- 100;
+    }
+    else {
+        i <- 50; 
+    }
+    return ~i;
+}
+
+function test_if_else_if (i as int) as int {
+    prints("If-Else-If Statement");
     while (i > 0) {
         if (i > 20) {
             divi i by 2;
         }
-        else {
-            decr i by 5;
+        else if (i > 5) {
+            decr i by 2;
         }
+        else {
+            decr i by 1;
+        }
+        print(i);
     }
     return i;
-} 
+}
