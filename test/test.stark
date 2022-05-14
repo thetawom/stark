@@ -3,4 +3,5 @@ function main () as int {
     define i as int;
     define f as float;
     ~f <- 2.0 + 1;
+    ~f <- 1;
 }

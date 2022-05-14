@@ -251,6 +251,10 @@ let check (globals, functions) =
             "illegal assignment " ^ string_of_typ lt ^ " = "
             ^ string_of_typ rt ^ " in " ^ string_of_stmt ex
           in
+          let rt, e' =
+            if lt = Float && rt = Int then (Float, SCast (Float, (Int, e')))
+            else (rt, e')
+          in
           let _ = check_assign lt rt err in
           SAssign (var, (rt, e'))
       | ArrayW (var, e1, e2) as ex -> (
