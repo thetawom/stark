@@ -151,7 +151,8 @@ let translate (globals, functions) =
           "" builder
       in
       let builder =
-        throw_error out_of_bounds builder "array out of bounds"
+        throw_error out_of_bounds builder
+          "[runtime error] array out of bounds"
       in
       ( L.build_in_bounds_gep (L.build_load s' "" builder) [|e|] "" builder
       , builder )
@@ -202,7 +203,8 @@ let translate (globals, functions) =
                 else L.build_fcmp L.Fcmp.Oeq (L.const_float float_t 0.0) )
                   e2' "" builder
               in
-              throw_error divide_by_zero builder "divide by zero"
+              throw_error divide_by_zero builder
+                "[runtime error] divide by zero"
             else builder
           in
           ( ( match op with
@@ -284,6 +286,10 @@ let translate (globals, functions) =
           , builder )
       | SCall ("prints", [e]) ->
           let e', builder = build_expr builder e in
+          let is_null = L.build_is_null e' "" builder in
+          let builder =
+            throw_error is_null builder "[runtime error] null pointer"
+          in
           ( L.build_call printf_func [|string_format_str; e'|] "printf"
               builder
           , builder )

@@ -1,9 +1,8 @@
 function main () as int {
     define arr as string[3];
     define s as string;
-    ~(arr[0]);
+    prints(arr[0]);
     ~(arr[1]);
     ~(arr[2]);
-    s <- "abc";
     prints(s);
 }
