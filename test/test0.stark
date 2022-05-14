@@ -2,12 +2,10 @@
 /*
 - Single-line comments
 - Multi-line comments
+- Variable declarations
 - Print statements
 - While loops
 - Repeat/until loops
-- If statements
-- If/else statements
-- If/else-if
 */
 
 function main () as int {
@@ -17,11 +15,34 @@ function main () as int {
     ~i <- 0;
     ~j <- 5;
     ~k <- 10;
-    i <- test_while(i);
-    j <- test_for(j);
-    k <- test_repeat_until(k);
+    
+    prints("While Loop");
+    while (i < 6) {
+        print(i);
+        incr i by 1;
+    }
+
+    prints("For Loop");
+    for j from 5 to 1 every -1 {
+        print(j);
+    }
+    j <- 1;
+    for j from 1 to 5 every 1 {
+        print(j);
+    }
+
+    prints("Repeat Until Loop");
+    repeat {
+        print(k);
+        decr k by 2;
+    } until k < 0;
+
+    printc('i');
+    prints("is");
+    print(i);
 }
 
+/*
 function test_while (i as int) as int {
     prints("While Loop");
     while (i < 6) {
@@ -51,3 +72,4 @@ function test_repeat_until (k as int) as int {
     } until k < 0;
     return k;
 }
+*/
