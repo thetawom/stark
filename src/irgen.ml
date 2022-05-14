@@ -68,7 +68,8 @@ let translate (globals, functions) =
       (L.build_call printf_func
          [|string_format_str; L.build_load error_msg "" error_builder|]
          "printf" error_builder ) ;
-    ignore (L.build_ret (L.const_int i32_t 1) error_builder) ;
+    ignore
+      (L.build_ret (L.const_null (ltype_of_typ fdecl.srtyp)) error_builder) ;
     let throw_error bool_val builder str =
       ignore
         (L.build_store

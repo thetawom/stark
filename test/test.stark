@@ -1,9 +1,14 @@
 function main () as int {
     define i as int;
     i <- 33;
-    if (i == 33) {
+    while (i == 33) {
         prints("Hello");
-    } else {
-        prints("Hallo");
+        incr i by 1;
     }
+    test();
+}
+
+function test () as bool {
+    5 / 0;
+    return false;
 }
