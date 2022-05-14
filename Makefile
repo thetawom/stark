@@ -13,6 +13,8 @@ test: dune
 #	lli test/test.ll > test/test0.out
 	_build/install/default/bin/stark -l test/test1.stark > test/test1.ll
 	lli test/test1.ll
+	_build/install/default/bin/stark -l test/test2.stark > test/test2.ll
+	lli test/test2.ll
 #	diff test/test0.out test/correct0.out -w
 
 # %.native:

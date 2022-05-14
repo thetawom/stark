@@ -1,0 +1,38 @@
+// This file tests the following features:
+/*
+- Operators for different data types
+- Casting data types
+- Implementation of the divide by zero error 
+*/
+
+function main() as int {
+    define c as char;
+    define i as int;
+    define f as float;
+    define b as bool;
+    define s as string;
+    ~i <- 0;
+    incr ~i by 1;
+    decr ~i by 11;
+    mult ~i by -10;
+    prints("---");
+    ~i <- (5 + 5) * i + 2 - 1000 / 2;
+    ~f <- 1.0;
+    ~f <- f / 2.0;
+    ~f <- f * 1.5;
+    ~f <- f + 2;
+    ~f <- f - 0.75;
+    prints("---");
+    ~b <- (i == 100); // false
+    ~b <- (i < 1000); // true
+    ~b <- (i > 0); // true
+    ~b <- (i <= 500); // false
+    ~b <- (i >= 1000); // false
+    ~b <- (10 < 20) and not (1 > 2) or (2 != 2); // true
+    prints("Casting data types:");
+    ~c <- ~(~('k' as int) + 2) as char;
+    ~s <- ~(~(98.0 as int) as char) as string;
+    ~i <- f as int;
+    prints("Divide by zero error:");
+    i/0;
+}

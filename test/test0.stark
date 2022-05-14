@@ -25,7 +25,7 @@ function main () as int {
 }
 
 function test_while (i as int) as int {
-    prints("While Loop");
+    prints("While Loop:");
     while (i < 6) {
         print(i);
         incr i by 1;
@@ -34,7 +34,7 @@ function test_while (i as int) as int {
 }
 
 function test_for (j as int) as int {
-    prints("For Loop");
+    prints("For Loop:");
     for j from 5 to 1 every -1 {
         print(j);
     }
@@ -46,7 +46,7 @@ function test_for (j as int) as int {
 }
 
 function test_repeat_until (k as int) as int {
-    prints("Repeat Until Loop");
+    prints("Repeat Until Loop:");
     repeat {
         print(k);
         decr k by 2;
