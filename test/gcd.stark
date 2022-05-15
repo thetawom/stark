@@ -1,0 +1,25 @@
+function main () as int {
+    define x as int;
+    define y as int;
+    define a as int;
+    define i as int;
+    define res as int;
+    x <- 15;
+    y <- 5;
+    a <- 0;
+    i <- 1;
+    res <- 0;
+    if (x > y) {
+        a <- y;
+    }
+    else {
+        a <- x;
+    }
+    a <- a + 1;
+    for i from 1 to a every 1 {
+        if ((x % i == 0) and (y % i == 0)) {
+            res <- i;
+        }
+    }
+    ~res;
+}

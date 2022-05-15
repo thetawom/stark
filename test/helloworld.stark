@@ -1,0 +1,3 @@
+function main() as int {
+    prints("Hello, world!");
+}
