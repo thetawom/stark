@@ -1,0 +1,31 @@
+0
+5
+10
+While Loop:
+0
+1
+2
+3
+4
+5
+For Loop:
+5
+4
+3
+2
+1
+1
+2
+3
+4
+5
+Repeat Until Loop:
+10
+8
+6
+4
+2
+0
+i
+is
+6

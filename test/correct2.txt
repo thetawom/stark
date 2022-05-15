@@ -1,0 +1,28 @@
+0
+1
+-10
+100
+---
+502
+1.000000
+0.500000
+0.750000
+2.750000
+2.000000
+---
+0
+1
+1
+0
+0
+1
+Casting data types:
+107
+109
+m
+98
+b
+b
+2
+Divide by zero error:
+[runtime error] divide by zero
