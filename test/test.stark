@@ -1,3 +1,7 @@
 function main () as int {
     define arr as int[3];
+    define i as int;
+    for i from 1 to 10 {
+        print(i);
+    }
 }

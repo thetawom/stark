@@ -92,6 +92,7 @@ stmt:
   | WHILE expr block                                  { While ($2, $3) }
   | REPEAT block UNTIL expr SEMI                      { RepUntil ($4, $2) }
   | FOR ID FROM expr TO expr EVERY expr block         { For ($2, $4, $6, $8, $9) }  
+  | FOR ID FROM expr TO expr block                    { For ($2, $4, $6, IntLit 1, $7) }  
   | FOR EACH ID IN ID block                           { ForEach ($3, $5, $6) }     
   | ID ASSIGN expr SEMI                               { Assign ($1, $3) }
   | ID LBRACK expr RBRACK ASSIGN expr SEMI            { ArrayW ($1, $3, $6) }
