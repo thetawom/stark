@@ -179,7 +179,7 @@ function main() as int {
 ```
 
 **Target language program (LLVM IR)**
-```
+```llvm
 ; ModuleID = 'Stark'
 source_filename = "Stark"
 @fmt = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
@@ -235,7 +235,7 @@ function main () as int {
 ```
 
 **Target language program (LLVM IR)**
-```
+```llvm
 ; ModuleID = 'Stark'
 source_filename = "Stark"
 @fmt = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
